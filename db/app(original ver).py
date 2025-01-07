@@ -31,16 +31,6 @@ execute_sql_file('db/safedrive.sql')
 def home():
     return render_template("index.html")
 
-@app.route("/delete_policy/<int:policy_id>", methods=["POST"])
-def delete_policy(policy_id):
-    try:
-        cursor.execute("DELETE FROM insurancepolicy WHERE Policy_ID = %s", (policy_id,))
-        db.commit()
-        return redirect("/view_policies")
-    except Exception as e:
-        print(f"Error deleting policy: {e}")
-        return redirect("/view_policies")
-
 # Additional routes for CRUD operations and queries go here
 @app.route("/view_policies")
 def view_policies():
@@ -180,8 +170,6 @@ def cleanup_duplicates():
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
-
     
     
 
