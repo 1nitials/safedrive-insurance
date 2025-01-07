@@ -18,8 +18,8 @@
                     <th>Manufacture Year</th>
                     <th>Policyholder</th>
                     <th>Policy Number</th>
-                    <th>Type</th>
-                    <th>Premium</th>
+                    <th>Policy Type</th>
+                    <th>Premium Amount</th>
                     <th>Start Date</th>
                     <th>End Date</th>
                 </tr>
@@ -32,11 +32,11 @@
                     <td>{{ vehicle.Vehicle_Type }}</td>
                     <td>{{ vehicle.Vehicle_Manufacture_Year }}</td>
                     <td>{{ vehicle.Policyholder_Name }}</td>
-                    <td>{{ vehicle.Policy_Number }}</td>
-                    <td>{{ vehicle.Policy_Type }}</td>
-                    <td>{{ vehicle.Policy_Premium_Amount }}</td>
-                    <td>{{ vehicle.Policy_Start_Date }}</td>
-                    <td>{{ vehicle.Policy_End_Date }}</td>
+                    <td>{% if vehicle.Policy_Number %}{{ vehicle.Policy_Number }}{% else %}N/A{% endif %}</td>
+                    <td>{% if vehicle.Policy_Type %}{{ vehicle.Policy_Type }}{% else %}N/A{% endif %}</td>
+                    <td>{% if vehicle.Policy_Premium_Amount %}{{ vehicle.Policy_Premium_Amount | round(2) }}{% else %}N/A{% endif %}</td>
+                    <td>{% if vehicle.Policy_Start_Date %}{{ vehicle.Policy_Start_Date }}{% else %}N/A{% endif %}</td>
+                    <td>{% if vehicle.Policy_End_Date %}{{ vehicle.Policy_End_Date }}{% else %}N/A{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

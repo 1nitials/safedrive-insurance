@@ -34,7 +34,7 @@ def home():
 @app.route("/delete_policy/<int:policy_id>", methods=["POST"])
 def delete_policy(policy_id):
     try:
-        cursor.execute("DELETE FROM insurancepolicy WHERE Policy_ID = %s", (policy_id,))
+        cursor.execute("DELETE FROM insurance_policy WHERE Policy_ID = %s", (policy_id,))
         db.commit()
         return redirect("/view_policies")
     except Exception as e:
@@ -48,7 +48,7 @@ def view_policies():
     cleanup_duplicates()
     
     # Query the database for policies
-    cursor.execute("SELECT * FROM insurancepolicy")
+    cursor.execute("SELECT * FROM insurance_policy")
     policies = cursor.fetchall()  # Fetch all rows as a list of dictionaries
     print(policies)
     
@@ -76,15 +76,17 @@ def view_policyholders():
             policyholder.Policyholder_Email,
             policyholder.Policyholder_Date_Of_Birth,
             policyholder.Policyholder_Driving_License_Number,
-            insurancepolicy.Policy_Number,
-            insurancepolicy.Policy_Type,
-            insurancepolicy.Policy_Premium_Amount
+            active_policy.Policy_Start_Date,
+            active_policy.Policy_End_Date,
+            insurance_policy.Policy_Number,
+            insurance_policy.Policy_Type,
+            insurance_policy.Policy_Premium_Amount
         FROM 
             policyholder
         LEFT JOIN 
-            activepolicy ON policyholder.Policyholder_ID = activepolicy.Policyholder_ID
+            active_policy ON policyholder.Policyholder_ID = active_policy.Application_ID
         LEFT JOIN 
-            insurancepolicy ON activepolicy.Policy_ID = insurancepolicy.Policy_ID
+            insurance_policy ON active_policy.Application_ID = insurance_policy.Policy_ID
         ORDER BY 
             policyholder.Policyholder_ID
     """
@@ -108,6 +110,8 @@ def view_policyholders():
         # Add policy details if available
         if row["Policy_Number"]:
             policyholders[policyholder_id]["Policies"].append({
+                "Policy_Start_Date": row["Policy_Start_Date"],
+                "Policy_End_Date": row["Policy_End_Date"],
                 "Policy_Number": row["Policy_Number"],
                 "Policy_Type": row["Policy_Type"],
                 "Policy_Premium_Amount": row["Policy_Premium_Amount"]
@@ -127,14 +131,14 @@ def view_vehicles():
             vehicle.Vehicle_Type,
             vehicle.Vehicle_Manufacture_Year,
             policyholder.Policyholder_Name,
-            activepolicy.Policy_Start_Date,
-            activepolicy.Policy_End_Date,
-            insurancepolicy.Policy_Number,
-            insurancepolicy.Policy_Type,
-            insurancepolicy.Policy_Premium_Amount
+            active_policy.Policy_Start_Date,
+            active_policy.Policy_End_Date,
+            insurance_policy.Policy_Number,
+            insurance_policy.Policy_Type,
+            insurance_policy.Policy_Premium_Amount
         FROM vehicle
-        LEFT JOIN activepolicy ON vehicle.Active_Policy_ID = activepolicy.Active_Policy_ID
-        LEFT JOIN insurancepolicy ON activepolicy.Policy_ID = insurancepolicy.Policy_ID
+        LEFT JOIN active_policy ON vehicle.Active_Policy_ID = active_policy.Active_Policy_ID
+        LEFT JOIN insurance_policy ON active_policy.Application_ID = insurance_policy.Policy_ID
         LEFT JOIN policyholder ON vehicle.Policyholder_ID = policyholder.Policyholder_ID
     """)
     vehicles = cursor.fetchall()
@@ -163,14 +167,14 @@ def cleanup_duplicates():
     # Step 1: Identify duplicates by Policy_Number
     cursor.execute("""
         SELECT MIN(Policy_ID) as MinID
-        FROM insurancepolicy
+        FROM insurance_policy
         GROUP BY Policy_Number, Policy_Type, Policy_Premium_Amount
     """)
     unique_ids = [row['MinID'] for row in cursor.fetchall()]  # Keep unique IDs
     
     # Step 2: Delete all rows not in the unique IDs
     query = """
-        DELETE FROM insurancepolicy
+        DELETE FROM insurance_policy
         WHERE Policy_ID NOT IN (%s)
     """ % (", ".join(map(str, unique_ids)))
     
