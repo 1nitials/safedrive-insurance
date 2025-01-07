@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Vehicles</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Vehicles, Policies, and Coverage</h1>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Vehicle ID</th>
+                    <th>Plate Number</th>
+                    <th>Type</th>
+                    <th>Manufacture Year</th>
+                    <th>Policyholder</th>
+                    <th>Policy Number</th>
+                    <th>Type</th>
+                    <th>Premium</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>{{ vehicle.Vehicle_ID }}</td>
+                    <td>{{ vehicle.Vehicle_Plate_Num }}</td>
+                    <td>{{ vehicle.Vehicle_Type }}</td>
+                    <td>{{ vehicle.Vehicle_Manufacture_Year }}</td>
+                    <td>{{ vehicle.Policyholder_Name }}</td>
+                    <td>{{ vehicle.Policy_Number }}</td>
+                    <td>{{ vehicle.Policy_Type }}</td>
+                    <td>{{ vehicle.Policy_Premium_Amount }}</td>
+                    <td>{{ vehicle.Policy_Start_Date }}</td>
+                    <td>{{ vehicle.Policy_End_Date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>
