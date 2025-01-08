@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, redirect
+from datetime import datetime
+from collections import defaultdict
 import mysql.connector
+import re
 
 app = Flask(__name__)
 
@@ -40,6 +43,73 @@ def delete_policy(policy_id):
     except Exception as e:
         print(f"Error deleting policy: {e}")
         return redirect("/view_policies")
+
+@app.route("/delete_policyholder/<int:policyholder_id>", methods=["POST"])
+def delete_policyholder(policyholder_id):
+    try:
+        cursor.execute("DELETE FROM policyholder WHERE Policyholder_ID = %s", (policyholder_id,))
+        db.commit()
+        return redirect("/view_policyholders")
+    except Exception as e:
+        print(f"Error deleting policyholder: {e}")
+        return redirect("/view_policyholders")
+    
+@app.route("/add_policyholder", methods=["GET", "POST"])
+def add_policyholder():
+    if request.method == "POST":
+        # Retrieve form data
+        name = request.form.get("name")
+        contact_number = request.form.get("contact_number")
+        email = request.form.get("email")
+        date_of_birth = request.form.get("date_of_birth")
+        driving_license_number = request.form.get("driving_license_number")
+        
+        # Initialize an error message variable
+        error_message = None
+        
+        # Input validation
+        if not name or not contact_number or not email or not date_of_birth or not driving_license_number:
+            error_message = "All fields are required."
+        
+        # Validate email format
+        elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            error_message = "Invalid email format."
+        
+        # Validate contact number (assuming a 10-digit number)
+        elif not contact_number.isdigit() or len(contact_number) > 13:
+            error_message = "Contact number must be less than 13-digit number."
+        
+        # Validate date of birth (ensure it's not a future date)
+        try:
+            dob = datetime.strptime(date_of_birth, "%Y-%m-%d")
+            if dob > datetime.now():
+                error_message = "Date of birth cannot be a future date."
+        except ValueError:
+            error_message = "Invalid date of birth format."
+        
+        if error_message:
+            return render_template("add_policyholder.html", error=error_message)
+        
+        # If no errors, insert the data into the database
+        try:
+            query = """
+                INSERT INTO policyholder (
+                    Policyholder_Name, 
+                    Policyholder_Contact_Number, 
+                    Policyholder_Email, 
+                    Policyholder_Date_Of_Birth, 
+                    Policyholder_Driving_License_Number
+                ) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (name, contact_number, email, date_of_birth, driving_license_number))
+            db.commit()
+            return redirect("/view_policyholders")
+        except Exception as e:
+            print(f"Error inserting policyholder: {e}")
+            return render_template("add_policyholder.html", error="Failed to add policyholder.")
+    
+    return render_template("add_policyholder.html")
 
 # Additional routes for CRUD operations and queries go here
 @app.route("/view_policies")
@@ -161,6 +231,49 @@ def view_vehicles():
     ]
 
     return render_template("view_vehicles.html", vehicles=formatted_vehicles)
+
+
+@app.route("/monthly_sales")
+def monthly_sales():
+    cursor.execute("""
+        SELECT Policy_Start_Date
+        FROM active_policy
+        WHERE Policy_Start_Date IS NOT NULL
+    """)
+    raw_dates = cursor.fetchall()
+
+    # Use a defaultdict to count occurrences per month-year
+    monthly_counts = defaultdict(int)
+    for record in raw_dates:
+        # Extract the month and year from the date
+        month_year = record['Policy_Start_Date'].strftime('%Y-%m')
+        monthly_counts[month_year] += 1
+
+    # Convert the defaultdict to a list of dictionaries for the template
+    sales_data = [{'Month': month, 'Policy_Count': count} for month, count in monthly_counts.items()]
+    sales_data.sort(reverse=True, key=lambda x: x['Month'])  # Sort by month descending
+
+    return render_template("monthly_sales.html", sales_data=sales_data)
+
+@app.route("/top_vehicles")
+def top_vehicles():
+    query = """
+        SELECT 
+            vehicle.Vehicle_Type, 
+            COUNT(*) AS NumberOfPolicies
+        FROM 
+            vehicle
+        JOIN 
+            active_policy ON vehicle.Active_Policy_ID = active_policy.Active_Policy_ID
+        GROUP BY 
+            vehicle.Vehicle_Type
+        ORDER BY 
+            NumberOfPolicies DESC
+        LIMIT 5
+    """
+    cursor.execute(query)
+    top_vehicle_types = cursor.fetchall()
+    return render_template("top_vehicles.html", top_vehicle_types=top_vehicle_types)
 
 
 def cleanup_duplicates():

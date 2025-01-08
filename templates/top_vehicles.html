@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Vehicle Types Insured</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Top 5 Vehicle Types Insured</h1>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Vehicle Type</th>
+                    <th>Number of Policies</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in top_vehicle_types %}
+                <tr>
+                    <td>{{ vehicle['Vehicle_Type'] }}</td>
+                    <td>{{ vehicle['NumberOfPolicies'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="/" class="button">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
