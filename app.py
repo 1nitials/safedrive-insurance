@@ -114,26 +114,43 @@ def add_policyholder():
 # Additional routes for CRUD operations and queries go here
 @app.route("/view_policies")
 def view_policies():
-    
-    cleanup_duplicates()
-    
-    # Query the database for policies
-    cursor.execute("SELECT * FROM insurance_policy")
-    policies = cursor.fetchall()  # Fetch all rows as a list of dictionaries
-    print(policies)
-    
-    # Ensure the keys are capitalized to match the template
+    query = """
+        SELECT 
+            insurance_policy.Policy_ID AS Policy_ID, 
+            insurance_policy.Policy_Number AS Policy_Number, 
+            insurance_policy.Policy_Type AS Policy_Type, 
+            insurance_policy.Policy_Premium_Amount AS Policy_Premium_Amount,
+            comprehensive_coverage.Repair_Coverage_Limit AS Repair_Coverage_Limit,
+            comprehensive_coverage.Roadside_Assistance_Included AS Roadside_Assistance_Included,
+            comprehensive_coverage.Theft_Coverage AS Theft_Coverage,
+            third_party_coverage.Liability_Coverage_Limit AS Liability_Coverage_Limit,
+            third_party_coverage.Property_Damage_Liability AS Property_Damage_Liability,
+            third_party_coverage.Injury_Liability_Coverage AS Injury_Liability_Coverage
+        FROM insurance_policy
+        LEFT JOIN comprehensive_coverage ON insurance_policy.Policy_ID = comprehensive_coverage.Policy_ID
+        LEFT JOIN third_party_coverage ON insurance_policy.Policy_ID = third_party_coverage.Policy_ID
+    """
+    cursor.execute(query)
+    policies = cursor.fetchall()
+
     formatted_policies = [
         {
             "Policy_ID": policy["Policy_ID"],
             "Policy_Number": policy["Policy_Number"],
             "Policy_Type": policy["Policy_Type"],
-            "Policy_Premium_Amount": policy["Policy_Premium_Amount"]
+            "Policy_Premium_Amount": policy["Policy_Premium_Amount"],
+            "Repair_Coverage_Limit": policy.get("Repair_Coverage_Limit"),
+            "Roadside_Assistance_Included": policy.get("Roadside_Assistance_Included"),
+            "Theft_Coverage": policy.get("Theft_Coverage"),
+            "Liability_Coverage_Limit": policy.get("Liability_Coverage_Limit"),
+            "Property_Damage_Liability": policy.get("Property_Damage_Liability"),
+            "Injury_Liability_Coverage": policy.get("Injury_Liability_Coverage"),
         }
         for policy in policies
     ]
-    
+
     return render_template("view_policies.html", policies=formatted_policies)
+
 
 @app.route("/view_policyholders")
 def view_policyholders():
@@ -193,9 +210,8 @@ def view_policyholders():
 
 @app.route("/view_vehicles")
 def view_vehicles():
-    # Query to fetch all vehicles and their associated policies
-    cursor.execute("""
-        SELECT
+    query = """
+        SELECT 
             vehicle.Vehicle_ID,
             vehicle.Vehicle_Plate_Num,
             vehicle.Vehicle_Type,
@@ -203,34 +219,49 @@ def view_vehicles():
             policyholder.Policyholder_Name,
             active_policy.Policy_Start_Date,
             active_policy.Policy_End_Date,
-            insurance_policy.Policy_Number,
-            insurance_policy.Policy_Type,
-            insurance_policy.Policy_Premium_Amount
-        FROM vehicle
-        LEFT JOIN active_policy ON vehicle.Active_Policy_ID = active_policy.Active_Policy_ID
-        LEFT JOIN insurance_policy ON active_policy.Application_ID = insurance_policy.Policy_ID
-        LEFT JOIN policyholder ON vehicle.Policyholder_ID = policyholder.Policyholder_ID
-    """)
+            application.Application_ID,
+            application.Application_Purpose
+        FROM 
+            vehicle
+        LEFT JOIN application ON vehicle.Application_ID = application.Application_ID
+        LEFT JOIN active_policy ON application.Application_ID = active_policy.Application_ID
+        LEFT JOIN policyholder ON application.Policyholder_ID = policyholder.Policyholder_ID
+    """
+    cursor.execute(query)
     vehicles = cursor.fetchall()
 
-    # Format the data for the template
-    formatted_vehicles = [
-        {
-            "Vehicle_ID": vehicle["Vehicle_ID"],
-            "Vehicle_Plate_Num": vehicle["Vehicle_Plate_Num"],
-            "Vehicle_Type": vehicle["Vehicle_Type"],
-            "Vehicle_Manufacture_Year": vehicle["Vehicle_Manufacture_Year"],
-            "Policyholder_Name": vehicle["Policyholder_Name"],
-            "Policy_Start_Date": vehicle["Policy_Start_Date"],
-            "Policy_End_Date": vehicle["Policy_End_Date"],
-            "Policy_Number": vehicle["Policy_Number"],
-            "Policy_Type": vehicle["Policy_Type"],
-            "Policy_Premium_Amount": vehicle["Policy_Premium_Amount"]
-        }
-        for vehicle in vehicles
-    ]
+    # Add additional info based on Vehicle_Type and Application_Purpose
+    for vehicle in vehicles:
+        # Fetch personal or commercial details based on Application_Purpose
+        if vehicle["Application_Purpose"] == "PERSONAL":
+            cursor.execute("SELECT Mileage_Limit, Driver_Count FROM personal WHERE Application_ID = %s", (vehicle["Application_ID"],))
+            vehicle["Purpose_Details"] = cursor.fetchone() or {}
+        elif vehicle["Application_Purpose"] == "COMMERCIAL":
+            cursor.execute("SELECT Fleet_Size, Goods_Covered, Business_Use_Type FROM commercial WHERE Application_ID = %s", (vehicle["Application_ID"],))
+            vehicle["Purpose_Details"] = cursor.fetchone() or {}
+        else:
+            vehicle["Purpose_Details"] = {}
 
-    return render_template("view_vehicles.html", vehicles=formatted_vehicles)
+        # Fetch additional vehicle-specific info
+        if vehicle["Vehicle_Type"] == "SEDAN":
+            cursor.execute("SELECT Trunk_Size, Fuel_Efficiency FROM sedan WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            vehicle["Additional_Info"] = cursor.fetchone() or {}
+        elif vehicle["Vehicle_Type"] == "SUV":
+            cursor.execute("SELECT Towing_Capacity, All_Wheel_Drive FROM suv WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            vehicle["Additional_Info"] = cursor.fetchone() or {}
+        elif vehicle["Vehicle_Type"] == "MOTORCYCLE":
+            cursor.execute("SELECT Engine_Displacement, Helmet_Storage FROM motorcycle WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            vehicle["Additional_Info"] = cursor.fetchone() or {}
+        elif vehicle["Vehicle_Type"] == "TRUCK":
+            cursor.execute("SELECT Payload_Capacity, Number_Of_Tyres FROM truck WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            vehicle["Additional_Info"] = cursor.fetchone() or {}
+        elif vehicle["Vehicle_Type"] == "VAN":
+            cursor.execute("SELECT Seating_Capacity, Cargo_Space FROM van WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            vehicle["Additional_Info"] = cursor.fetchone() or {}
+        else:
+            vehicle["Additional_Info"] = {}
+
+    return render_template("view_vehicles.html", vehicles=vehicles)
 
 
 @app.route("/monthly_sales")
@@ -255,16 +286,19 @@ def monthly_sales():
 
     return render_template("monthly_sales.html", sales_data=sales_data)
 
+
 @app.route("/top_vehicles")
 def top_vehicles():
     query = """
         SELECT 
             vehicle.Vehicle_Type, 
-            COUNT(*) AS NumberOfPolicies
+            COUNT(active_policy.Active_Policy_ID) AS NumberOfPolicies
         FROM 
             vehicle
         JOIN 
-            active_policy ON vehicle.Active_Policy_ID = active_policy.Active_Policy_ID
+            application ON vehicle.Application_ID = application.Application_ID
+        JOIN 
+            active_policy ON application.Application_ID = active_policy.Application_ID
         GROUP BY 
             vehicle.Vehicle_Type
         ORDER BY 

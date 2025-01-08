@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="header">Vehicles, Policies, and Coverage</h1>
+        <h2 class="header">Vehicle Details</h2>
         <table class="styled-table">
             <thead>
                 <tr>
@@ -17,11 +17,9 @@
                     <th>Type</th>
                     <th>Manufacture Year</th>
                     <th>Policyholder</th>
-                    <th>Policy Number</th>
-                    <th>Policy Type</th>
-                    <th>Premium Amount</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
+                    <th>Policy Dates</th>
+                    <th>Purpose Details</th>
+                    <th>Additional Info</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,11 +30,31 @@
                     <td>{{ vehicle.Vehicle_Type }}</td>
                     <td>{{ vehicle.Vehicle_Manufacture_Year }}</td>
                     <td>{{ vehicle.Policyholder_Name }}</td>
-                    <td>{% if vehicle.Policy_Number %}{{ vehicle.Policy_Number }}{% else %}N/A{% endif %}</td>
-                    <td>{% if vehicle.Policy_Type %}{{ vehicle.Policy_Type }}{% else %}N/A{% endif %}</td>
-                    <td>{% if vehicle.Policy_Premium_Amount %}{{ vehicle.Policy_Premium_Amount | round(2) }}{% else %}N/A{% endif %}</td>
-                    <td>{% if vehicle.Policy_Start_Date %}{{ vehicle.Policy_Start_Date }}{% else %}N/A{% endif %}</td>
-                    <td>{% if vehicle.Policy_End_Date %}{{ vehicle.Policy_End_Date }}{% else %}N/A{% endif %}</td>
+                    <td>
+                        {% if vehicle.Policy_Start_Date and vehicle.Policy_End_Date %}
+                            {{ vehicle.Policy_Start_Date }} - {{ vehicle.Policy_End_Date }}
+                        {% else %}
+                            <span style="color: #d9534f;">No policy dates available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if vehicle.Purpose_Details %}
+                            {% for key, value in vehicle.Purpose_Details.items() %}
+                                <strong>{{ key.replace('_', ' ').title() }}</strong>: {{ value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #d9534f;">No purpose details available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if vehicle.Additional_Info %}
+                            {% for key, value in vehicle.Additional_Info.items() %}
+                                <strong>{{ key.replace('_', ' ').title() }}</strong>: {{ value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #d9534f;">No additional info available</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

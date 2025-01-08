@@ -227,13 +227,19 @@ INSERT INTO `personal` (`Application_ID`, `Mileage_Limit`, `Driver_Count`) VALUE
 --
 
 CREATE TABLE `policyholder` (
-`Policyholder_ID` int(11) NOT NULL,
-`Policyholder_Name` varchar(100) NOT NULL,
-`Policyholder_Contact_Number` varchar(15) NOT NULL,
-`Policyholder_Email` varchar(100) NOT NULL,
-`Policyholder_Date_Of_Birth` date NOT NULL,
-`Policyholder_Driving_License_Number` varchar(50) NOT NULL
+  `Policyholder_ID` int(11) NOT NULL,
+  `Policyholder_Name` varchar(100) NOT NULL,
+  `Policyholder_Contact_Number` varchar(15) NOT NULL,
+  `Policyholder_Email` varchar(100) NOT NULL,
+  `Policyholder_Date_Of_Birth` date NOT NULL,
+  `Policyholder_Driving_License_Number` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- Then, insert or reference the Policyholder_ID
+INSERT INTO `policyholder` (`Policyholder_Name`, `Policyholder_Contact_Number`, `Policyholder_Email`, `Policyholder_Date_Of_Birth`, `Policyholder_Driving_License_Number`) 
+VALUES ('John Doe', '0123456789', 'john.doe@example.com', '1970-01-01', 'D1234567');
+
 
 --
 -- Dumping data for table `policyholder`
@@ -358,12 +364,10 @@ INSERT INTO `van` (`Vehicle_ID`, `Seating_Capacity`, `Cargo_Space`) VALUES
 
 CREATE TABLE `vehicle` (
   `Vehicle_ID` int(11) NOT NULL,
-  `Vehicle_Plate_Num` varchar(20) DEFAULT NULL,
-  `Vehicle_Type` varchar(50) DEFAULT NULL,
-  `Vehicle_Manufacture_Year` int(11) DEFAULT NULL,
-  `Policyholder_ID` int(11) DEFAULT NULL,
-  `Application_ID` int(11) DEFAULT NULL,
-  `Active_Policy_ID` int(11) DEFAULT NULL
+  `Vehicle_Plate_Num` varchar(15) NOT NULL,
+  `Vehicle_Type` enum('SEDAN','SUV','TRUCK','MOTORCYCLE','VAN') NOT NULL,
+  `Vehicle_Manufacture_Year` year(4) NOT NULL,
+  `Application_ID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -589,16 +593,44 @@ ALTER TABLE `vehicle`
 ADD CONSTRAINT `fk_vehicle_application` FOREIGN KEY (`Application_ID`) REFERENCES `application` (`Application_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
-UPDATE vehicle SET Policyholder_ID = 1, Active_Policy_ID = 1 WHERE Vehicle_ID = 1;
-UPDATE vehicle SET Policyholder_ID = 4, Active_Policy_ID = 2 WHERE Vehicle_ID = 4;
-UPDATE vehicle SET Policyholder_ID = 6, Active_Policy_ID = 3 WHERE Vehicle_ID = 6;
-UPDATE vehicle SET Policyholder_ID = 8, Active_Policy_ID = 4 WHERE Vehicle_ID = 8;
+-- Update the `active_policy` table to correctly associate Application_ID with Active_Policy_ID
+UPDATE active_policy
+SET Application_ID = 1
+WHERE Active_Policy_ID = 1;
 
+UPDATE active_policy
+SET Application_ID = 4
+WHERE Active_Policy_ID = 2;
 
-UPDATE active_policy SET Application_ID = 1 WHERE Active_Policy_ID = 1;
-UPDATE active_policy SET Application_ID = 4 WHERE Active_Policy_ID = 2;
-UPDATE active_policy SET Application_ID = 6 WHERE Active_Policy_ID = 3;
-UPDATE active_policy SET Application_ID = 8 WHERE Active_Policy_ID = 4;
+UPDATE active_policy
+SET Application_ID = 6
+WHERE Active_Policy_ID = 3;
+
+UPDATE active_policy
+SET Application_ID = 8
+WHERE Active_Policy_ID = 4;
+
+-- Update the `application` table to associate Policyholder_ID and ensure relationships are consistent
+UPDATE application
+SET Policyholder_ID = 1
+WHERE Application_ID = 1;
+
+UPDATE application
+SET Policyholder_ID = 4
+WHERE Application_ID = 4;
+
+UPDATE application
+SET Policyholder_ID = 6
+WHERE Application_ID = 6;
+
+UPDATE application
+SET Policyholder_ID = 8
+WHERE Application_ID = 8;
+
+-- No need to update the `vehicle.Application_ID` since it already connects to `application.Application_ID`.
+-- Instead, ensure proper associations via joins during queries.
+-- If `vehicle.Application_ID` is correctly set, there's no need for the following type of update.
+
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
