@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Vehicle Types Insured</title>
     <link rel="stylesheet" href="/static/view.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/top_vehicles.js" defer></script> <!-- External JS file -->
 </head>
 <body>
     <div class="container">
@@ -25,9 +27,20 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Chart Container -->
+        <div>
+            <canvas id="vehiclesChart" width="200" height="165"></canvas>
+        </div>
+
         <div class="back-button">
             <a href="/" class="button">Back to Home</a>
         </div>
+
+        <!-- Pass data as a JSON object -->
+        <script>
+            const vehicleData = JSON.parse('{{ top_vehicle_types | tojson | safe }}');
+        </script>
     </div>
 </body>
 </html>

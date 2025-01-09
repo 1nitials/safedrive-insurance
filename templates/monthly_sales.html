@@ -1,4 +1,3 @@
-<!-- monthly_sales.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Policy Sales</title>
     <link rel="stylesheet" href="/static/view.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/monthly_sales.js" defer></script> <!-- External JS file -->
 </head>
 <body>
     <div class="container">
@@ -26,9 +27,20 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Chart Container -->
+        <div>
+            <canvas id="salesChart" width="200" height="165"></canvas>
+        </div>
+
         <div class="back-button">
             <a href="/" class="button">Back to Home</a>
         </div>
+
+        <!-- Pass data as a JSON object -->
+        <script>
+            const salesData = JSON.parse('{{ sales_data | tojson | safe }}');
+        </script>
     </div>
 </body>
 </html>

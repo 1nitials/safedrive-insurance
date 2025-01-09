@@ -249,7 +249,7 @@ INSERT INTO `policyholder` (`Policyholder_ID`, `Policyholder_Name`, `Policyholde
 (1, 'Izz Ezzad Syameir', '0123456789', 'izz.ezz@example.com', '2003-03-13', 'D12345678'),
 (2, 'Neasthy Laade', '0198765432', 'neasthy.laade@example.com', '2004-10-22', 'D98765432'),
 (3, 'Isaac', '0112233445', 'Isaac.shagal@example.com', '2004-12-05', 'D33445566'),
-(4, 'Ronad', '0102203321', 'ronand.dayou@example.com', '2004-07-30', 'D49020044'),
+(4, 'Ronad', '0102203321', 'ronad.jedol@example.com', '2004-07-30', 'D49020044'),
 (5, 'Ming', '01116385037', 'ming.lee@example.com', '2003-02-14', 'D39759473'),
 (6, 'Ali Bin Ahmad', '0112233445', 'ali.ahmad@example.com', '1992-12-05', 'D29475374'),
 (7, 'Nurul Afiqah', '0183345678', 'afiqah.hassan@example.com', '2002-01-25', 'D66554433'),
@@ -385,247 +385,152 @@ INSERT INTO `vehicle` (`Vehicle_ID`, `Vehicle_Plate_Num`, `Vehicle_Type`, `Vehic
 (7, 'PQR1234', 'SUV', '2022', 7),
 (8, 'STU6789', 'TRUCK', '2018', 8);
 
---
--- Indexes for dumped tables
+-- 
+-- Add Indexes and Constraints to Existing Tables
 --
 
---
 -- Indexes for table `active_policy`
---
 ALTER TABLE `active_policy`
 ADD PRIMARY KEY (`Active_Policy_ID`),
 ADD KEY `fk_active_policy_application` (`Application_ID`);
 
---
 -- Indexes for table `application`
---
 ALTER TABLE `application`
 ADD PRIMARY KEY (`Application_ID`),
 ADD KEY `fk_application_policyholder` (`Policyholder_ID`),
 ADD KEY `fk_application_policy` (`Policy_ID`);
 
---
 -- Indexes for table `commercial`
---
 ALTER TABLE `commercial`
 ADD PRIMARY KEY (`Application_ID`);
 
---
 -- Indexes for table `comprehensive_coverage`
---
 ALTER TABLE `comprehensive_coverage`
 ADD PRIMARY KEY (`Policy_ID`);
 
---
 -- Indexes for table `insurance_policy`
---
 ALTER TABLE `insurance_policy`
 ADD PRIMARY KEY (`Policy_ID`),
 ADD UNIQUE KEY `Policy_Number` (`Policy_Number`);
 
---
 -- Indexes for table `motorcycle`
---
 ALTER TABLE `motorcycle`
 ADD PRIMARY KEY (`Vehicle_ID`);
 
---
 -- Indexes for table `personal`
---
 ALTER TABLE `personal`
 ADD PRIMARY KEY (`Application_ID`);
 
---
 -- Indexes for table `policyholder`
---
 ALTER TABLE `policyholder`
 ADD PRIMARY KEY (`Policyholder_ID`),
 ADD UNIQUE KEY `Policyholder_Email` (`Policyholder_Email`),
 ADD UNIQUE KEY `Policyholder_Driving_License_Number` (`Policyholder_Driving_License_Number`);
 
---
 -- Indexes for table `sedan`
---
 ALTER TABLE `sedan`
 ADD PRIMARY KEY (`Vehicle_ID`);
 
---
 -- Indexes for table `suv`
---
 ALTER TABLE `suv`
 ADD PRIMARY KEY (`Vehicle_ID`);
 
---
 -- Indexes for table `third_party_coverage`
---
 ALTER TABLE `third_party_coverage`
 ADD PRIMARY KEY (`Policy_ID`);
 
---
 -- Indexes for table `truck`
---
 ALTER TABLE `truck`
 ADD PRIMARY KEY (`Vehicle_ID`);
 
---
 -- Indexes for table `van`
---
 ALTER TABLE `van`
 ADD PRIMARY KEY (`Vehicle_ID`);
 
---
 -- Indexes for table `vehicle`
---
 ALTER TABLE `vehicle`
 ADD PRIMARY KEY (`Vehicle_ID`),
 ADD UNIQUE KEY `Vehicle_Plate_Num` (`Vehicle_Plate_Num`),
 ADD KEY `fk_vehicle_application` (`Application_ID`);
 
---
--- AUTO_INCREMENT for dumped tables
+-- 
+-- Add AUTO_INCREMENT to tables
 --
 
---
 -- AUTO_INCREMENT for table `active_policy`
---
 ALTER TABLE `active_policy`
 MODIFY `Active_Policy_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
---
 -- AUTO_INCREMENT for table `application`
---
 ALTER TABLE `application`
 MODIFY `Application_ID` int(11) NOT NULL AUTO_INCREMENT;
 
---
 -- AUTO_INCREMENT for table `insurance_policy`
---
 ALTER TABLE `insurance_policy`
 MODIFY `Policy_ID` int(11) NOT NULL AUTO_INCREMENT;
 
---
 -- AUTO_INCREMENT for table `policyholder`
---
 ALTER TABLE `policyholder`
 MODIFY `Policyholder_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
---
 -- AUTO_INCREMENT for table `vehicle`
---
 ALTER TABLE `vehicle`
 MODIFY `Vehicle_ID` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- Constraints for dumped tables
+-- 
+-- Add Constraints for Foreign Keys
 --
 
---
 -- Constraints for table `active_policy`
---
 ALTER TABLE `active_policy`
 ADD CONSTRAINT `fk_active_policy_application` FOREIGN KEY (`Application_ID`) REFERENCES `application` (`Application_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `application`
---
 ALTER TABLE `application`
 ADD CONSTRAINT `fk_application_policy` FOREIGN KEY (`Policy_ID`) REFERENCES `insurance_policy` (`Policy_ID`) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT `fk_application_policyholder` FOREIGN KEY (`Policyholder_ID`) REFERENCES `policyholder` (`Policyholder_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `commercial`
---
 ALTER TABLE `commercial`
 ADD CONSTRAINT `fk_commercial_application` FOREIGN KEY (`Application_ID`) REFERENCES `application` (`Application_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `comprehensive_coverage`
---
 ALTER TABLE `comprehensive_coverage`
 ADD CONSTRAINT `fk_comprehensive_policy` FOREIGN KEY (`Policy_ID`) REFERENCES `insurance_policy` (`Policy_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `motorcycle`
---
 ALTER TABLE `motorcycle`
 ADD CONSTRAINT `fk_motorcycle_vehicle` FOREIGN KEY (`Vehicle_ID`) REFERENCES `vehicle` (`Vehicle_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `personal`
---
 ALTER TABLE `personal`
 ADD CONSTRAINT `fk_personal_application` FOREIGN KEY (`Application_ID`) REFERENCES `application` (`Application_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `sedan`
---
 ALTER TABLE `sedan`
 ADD CONSTRAINT `fk_sedan_vehicle` FOREIGN KEY (`Vehicle_ID`) REFERENCES `vehicle` (`Vehicle_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `suv`
---
 ALTER TABLE `suv`
 ADD CONSTRAINT `fk_suv_vehicle` FOREIGN KEY (`Vehicle_ID`) REFERENCES `vehicle` (`Vehicle_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `third_party_coverage`
---
 ALTER TABLE `third_party_coverage`
 ADD CONSTRAINT `fk_third_party_policy` FOREIGN KEY (`Policy_ID`) REFERENCES `insurance_policy` (`Policy_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `truck`
---
 ALTER TABLE `truck`
 ADD CONSTRAINT `fk_truck_vehicle` FOREIGN KEY (`Vehicle_ID`) REFERENCES `vehicle` (`Vehicle_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `van`
---
 ALTER TABLE `van`
 ADD CONSTRAINT `fk_van_vehicle` FOREIGN KEY (`Vehicle_ID`) REFERENCES `vehicle` (`Vehicle_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
 -- Constraints for table `vehicle`
---
 ALTER TABLE `vehicle`
 ADD CONSTRAINT `fk_vehicle_application` FOREIGN KEY (`Application_ID`) REFERENCES `application` (`Application_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 COMMIT;
-
--- Update the `active_policy` table to correctly associate Application_ID with Active_Policy_ID
-UPDATE active_policy
-SET Application_ID = 1
-WHERE Active_Policy_ID = 1;
-
-UPDATE active_policy
-SET Application_ID = 4
-WHERE Active_Policy_ID = 2;
-
-UPDATE active_policy
-SET Application_ID = 6
-WHERE Active_Policy_ID = 3;
-
-UPDATE active_policy
-SET Application_ID = 8
-WHERE Active_Policy_ID = 4;
-
--- Update the `application` table to associate Policyholder_ID and ensure relationships are consistent
-UPDATE application
-SET Policyholder_ID = 1
-WHERE Application_ID = 1;
-
-UPDATE application
-SET Policyholder_ID = 4
-WHERE Application_ID = 4;
-
-UPDATE application
-SET Policyholder_ID = 6
-WHERE Application_ID = 6;
-
-UPDATE application
-SET Policyholder_ID = 8
-WHERE Application_ID = 8;
 
 -- No need to update the `vehicle.Application_ID` since it already connects to `application.Application_ID`.
 -- Instead, ensure proper associations via joins during queries.

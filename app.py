@@ -37,22 +37,95 @@ def home():
 @app.route("/delete_policy/<int:policy_id>", methods=["POST"])
 def delete_policy(policy_id):
     try:
+        # Fetch all application IDs related to the policy
+        cursor.execute("""
+            SELECT Application_ID 
+            FROM application 
+            WHERE Policy_ID = %s
+        """, (policy_id,))
+        applications = cursor.fetchall()
+
+        # Extract Application_IDs
+        application_ids = [app['Application_ID'] for app in applications]
+
+        if application_ids:
+            # Delete corresponding active policies
+            cursor.execute("""
+                DELETE FROM active_policy 
+                WHERE Application_ID IN (%s)
+            """ % ','.join(['%s'] * len(application_ids)), tuple(application_ids))
+
+        # Delete from `application` table (linked to the policy)
+        # cursor.execute("DELETE FROM application WHERE Policy_ID = %s", (policy_id,))
+
+        # Finally, delete the insurance policy itself
         cursor.execute("DELETE FROM insurance_policy WHERE Policy_ID = %s", (policy_id,))
+
         db.commit()
         return redirect("/view_policies")
     except Exception as e:
         print(f"Error deleting policy: {e}")
+        db.rollback()
         return redirect("/view_policies")
+
 
 @app.route("/delete_policyholder/<int:policyholder_id>", methods=["POST"])
 def delete_policyholder(policyholder_id):
     try:
+        # Delete all associated vehicles
+        cursor.execute("""
+            DELETE FROM vehicle 
+            WHERE Application_ID IN (
+                SELECT Application_ID 
+                FROM application 
+                WHERE Policyholder_ID = %s
+            )
+        """, (policyholder_id,))
+
+        # Fetch all applications related to the policyholder
+        cursor.execute("""
+            SELECT Application_ID 
+            FROM application 
+            WHERE Policyholder_ID = %s
+        """, (policyholder_id,))
+        applications = cursor.fetchall()
+
+        # Extract application IDs
+        application_ids = [app['Application_ID'] for app in applications]
+
+        if application_ids:
+            # Delete corresponding active policies
+            cursor.execute("""
+                DELETE FROM active_policy 
+                WHERE Application_ID IN (%s)
+            """ % ','.join(['%s'] * len(application_ids)), tuple(application_ids))
+
+            # Delete corresponding insurance policies
+            cursor.execute("""
+                DELETE FROM insurance_policy 
+                WHERE Policy_ID IN (
+                    SELECT Policy_ID 
+                    FROM application 
+                    WHERE Application_ID IN (%s)
+                )
+            """ % ','.join(['%s'] * len(application_ids)), tuple(application_ids))
+
+        # Delete applications linked to this policyholder
+        cursor.execute("""
+            DELETE FROM application 
+            WHERE Policyholder_ID = %s
+        """, (policyholder_id,))
+
+        # Finally, delete the policyholder
         cursor.execute("DELETE FROM policyholder WHERE Policyholder_ID = %s", (policyholder_id,))
+
         db.commit()
         return redirect("/view_policyholders")
     except Exception as e:
         print(f"Error deleting policyholder: {e}")
+        db.rollback()
         return redirect("/view_policyholders")
+
     
 @app.route("/add_policyholder", methods=["GET", "POST"])
 def add_policyholder():
