@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Vehicle</title>
+    <link rel="stylesheet" href="/static/view.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .update-button {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Update Vehicle</h1>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" onsubmit="return confirmUpdate();">
+            <label for="vehicle_plate_num">Plate Number:</label>
+            <input type="text" id="vehicle_plate_num" name="vehicle_plate_num" value="{{ vehicle.Vehicle_Plate_Num }}" required>
+            
+            <label for="vehicle_type">Type:</label>
+            <select id="vehicle_type" name="vehicle_type" required>
+                <option value="Motorcycle" {% if vehicle.Vehicle_Type == 'Motorcycle' %}selected{% endif %}>Motorcycle</option>
+                <option value="Sedan" {% if vehicle.Vehicle_Type == 'Sedan' %}selected{% endif %}>Sedan</option>
+                <option value="SUV" {% if vehicle.Vehicle_Type == 'SUV' %}selected{% endif %}>SUV</option>
+                <option value="Truck" {% if vehicle.Vehicle_Type == 'Truck' %}selected{% endif %}>Truck</option>
+                <option value="Van" {% if vehicle.Vehicle_Type == 'Van' %}selected{% endif %}>Van</option>
+            </select>
+            
+            <label for="vehicle_manufacture_year">Manufacture Year:</label>
+            <input type="number" id="vehicle_manufacture_year" name="vehicle_manufacture_year" value="{{ vehicle.Vehicle_Manufacture_Year }}" required>
+            
+            <div class="back-button">
+                <a href="/view/view_vehicles" class="button">Go Back</a>
+                <button type="submit" class="update-button">Update Vehicle</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function confirmUpdate() {
+            return confirm("Are you sure you want to update this vehicle's information?");
+        }
+    </script>
+</body>
+</html>

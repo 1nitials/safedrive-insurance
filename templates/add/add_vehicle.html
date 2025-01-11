@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vehicle</title>
+    <link rel="stylesheet" href="/static/form-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Add Vehicle</h1>
+
+        <!-- Display error messages -->
+        {% if errors %}
+            <ul style="color: red;">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" action="/add_vehicle">
+            <label for="application_id">Application ID:</label>
+            <select name="application_id" required>
+                <option value="">Select Application</option> <!-- Default option -->
+                {% for app in applications %}
+                    <option value="{{ app.Application_ID }}">
+                        {{ app.Application_ID }} - {{ app.Application_Status }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="vehicle_plate_number">Vehicle Plate Number:</label>
+            <input type="text" name="vehicle_plate_number" maxlength="15" required>
+
+            <label for="vehicle_type">Vehicle Type:</label>
+            <select name="vehicle_type" required>
+                <option value="SEDAN">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="TRUCK">Truck</option>
+                <option value="MOTORCYCLE">Motorcycle</option>
+                <option value="VAN">Van</option>
+            </select>
+
+            <label for="vehicle_manufacture_year">Manufacture Year:</label>
+            <input type="number" name="vehicle_manufacture_year" min="1900" max="2100" required>
+
+            <!-- Sedan-specific fields -->
+            <div id="sedan_fields" class="vehicle-subtype-fields" style="display: none;">
+                <label for="trunk_size">Trunk Size (m³):</label>
+                <input type="number" step="0.01" name="trunk_size"><br><br>
+                <label for="fuel_efficiency">Fuel Efficiency (km/l):</label>
+                <input type="number" step="0.01" name="fuel_efficiency"><br><br>
+            </div>
+
+            <!-- SUV-specific fields -->
+            <div id="suv_fields" class="vehicle-subtype-fields" style="display: none;">
+                <label for="towing_capacity">Towing Capacity (kg):</label>
+                <input type="number" step="0.01" name="towing_capacity"><br><br>
+                <label for="all_wheel_drive">All-Wheel Drive:</label>
+                <input type="checkbox" name="all_wheel_drive"><br><br>
+            </div>
+
+            <!-- Truck-specific fields -->
+            <div id="truck_fields" class="vehicle-subtype-fields" style="display: none;">
+                <label for="payload_capacity">Payload Capacity (kg):</label>
+                <input type="number" step="0.01" name="payload_capacity"><br><br>
+                <label for="number_of_tyres">Number of Tyres:</label>
+                <input type="number" name="number_of_tyres"><br><br>
+            </div>
+
+            <!-- Motorcycle-specific fields -->
+            <div id="motorcycle_fields" class="vehicle-subtype-fields" style="display: none;">
+                <label for="engine_displacement">Engine Displacement (cc):</label>
+                <input type="number" step="0.01" name="engine_displacement"><br><br>
+                <label for="helmet_storage">Helmet Storage:</label>
+                <input type="checkbox" name="helmet_storage"><br><br>
+            </div>
+
+            <!-- Van-specific fields -->
+            <div id="van_fields" class="vehicle-subtype-fields" style="display: none;">
+                <label for="seating_capacity">Seating Capacity:</label>
+                <input type="number" name="seating_capacity"><br><br>
+                <label for="cargo_space">Cargo Space (m³):</label>
+                <input type="number" step="0.01" name="cargo_space"><br><br>
+            </div>
+
+            <button type="submit">Add Vehicle</button>
+        </form>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+
+        <script>
+            // JavaScript to toggle subtype fields based on selected vehicle type
+            document.querySelector('select[name="vehicle_type"]').addEventListener('change', function() {
+                document.querySelectorAll('.vehicle-subtype-fields').forEach(div => div.style.display = 'none');
+                if (this.value === 'SEDAN') {
+                    document.getElementById('sedan_fields').style.display = 'block';
+                } else if (this.value === 'SUV') {
+                    document.getElementById('suv_fields').style.display = 'block';
+                } else if (this.value === 'TRUCK') {
+                    document.getElementById('truck_fields').style.display = 'block';
+                } else if (this.value === 'MOTORCYCLE') {
+                    document.getElementById('motorcycle_fields').style.display = 'block';
+                } else if (this.value === 'VAN') {
+                    document.getElementById('van_fields').style.display = 'block';
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

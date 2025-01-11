@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Vehicles</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h2 class="header">Vehicle Details</h2>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Vehicle ID</th>
+                    <th>Plate Number</th>
+                    <th>Type</th>
+                    <th>Manufacture Year</th>
+                    <th>Policyholder</th>
+                    <th>Policy Dates</th>
+                    <th>Purpose Details</th>
+                    <th>Additional Info</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>{{ vehicle.Vehicle_ID }}</td>
+                    <td>{{ vehicle.Vehicle_Plate_Num }}</td>
+                    <td>{{ vehicle.Vehicle_Type }}</td>
+                    <td>{{ vehicle.Vehicle_Manufacture_Year }}</td>
+                    <td>{{ vehicle.Policyholder_Name }}</td>
+                    <td>
+                        {% if vehicle.Policy_Start_Date and vehicle.Policy_End_Date %}
+                            {{ vehicle.Policy_Start_Date }} - {{ vehicle.Policy_End_Date }}
+                        {% else %}
+                            <span style="color: #d9534f;">No policy dates available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if vehicle.Purpose_Details %}
+                            {% for key, value in vehicle.Purpose_Details.items() %}
+                                <strong>{{ key.replace('_', ' ').title() }}</strong>: {{ value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #d9534f;">No purpose details available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if vehicle.Additional_Info %}
+                            {% for key, value in vehicle.Additional_Info.items() %}
+                                <strong>{{ key.replace('_', ' ').title() }}</strong>: {{ value }}<br>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #d9534f;">No additional info available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{{ url_for('update_vehicle', vehicle_id=vehicle.Vehicle_ID) }}" method="get" style="display:inline;">
+                            <button type="submit" aria-label="Update vehicle {{ vehicle.Vehicle_Plate_Num }}">Update</button>
+                        </form> <!-- Update button -->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

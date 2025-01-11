@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Policy Sales</title>
+    <link rel="stylesheet" href="/static/view.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/monthly_sales.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Monthly Policy Sales</h1>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Policy Count</th>
+                        <th>Total Premium (RM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales_data %}
+                    <tr>
+                        <td>{{ sale['Month'] }}</td>
+                        <td>{{ sale['Policy_Count'] }}</td>
+                        <td>{{ sale['Total_Premium'] | round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dropdown Selector -->
+        <div class="dropdown-container">
+            <label for="dataSelector">Select Data:</label>
+            <select id="dataSelector">
+                <option value="policyCount">Policy Count</option>
+                <option value="totalPremium">Total Premium</option>
+            </select>
+        </div>
+
+        <!-- Chart Container -->
+        <div>
+            <canvas id="salesChart" width="200" height="165"></canvas>
+        </div>
+
+        <div class="back-button">
+            <a href="/" class="button">Back to Home</a>
+        </div>
+
+        <!-- Pass data as a JSON object -->
+        <script>
+            const salesData = JSON.parse('{{ sales_data | tojson | safe }}');
+        </script>
+    </div>
+</body>
+</html>

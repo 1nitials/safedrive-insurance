@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Policyholder</title>
+    <link rel="stylesheet" href="/static/view.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .update-button {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Update Policyholder</h1>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" onsubmit="return confirmUpdate();">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="{{ policyholder.Policyholder_Name }}" required>
+            <label for="contact_number">Contact Number:</label>
+            <input type="text" id="contact_number" name="contact_number" value="{{ policyholder.Policyholder_Contact_Number }}" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ policyholder.Policyholder_Email }}" required>
+            <label for="date_of_birth">Date of Birth:</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ policyholder.Policyholder_Date_Of_Birth }}" required>
+            <label for="driving_license_number">Driving License Number:</label>
+            <input type="text" id="driving_license_number" name="driving_license_number" value="{{ policyholder.Policyholder_Driving_License_Number }}" required>
+            <div class="back-button">
+                <a href="/view/view_policyholders" class="button">Go Back</a>
+                <button type="submit" class="update-button">Update Policyholder</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function confirmUpdate() {
+            return confirm("Are you sure you want to update this policyholder's information?");
+        }
+    </script>
+</body>
+</html>

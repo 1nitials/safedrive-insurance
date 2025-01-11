@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Policies</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Active Policies</h1>
+
+        {% if active_policies %}
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Active Policy ID</th>
+                        <th>Policy Start Date</th>
+                        <th>Policy End Date</th>
+                        <th>Application ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for policy in active_policies %}
+                        <tr>
+                            <td>{{ policy.Active_Policy_ID }}</td>
+                            <td>{{ policy.Policy_Start_Date }}</td>
+                            <td>{{ policy.Policy_End_Date }}</td>
+                            <td>{{ policy.Application_ID }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No active policies found.</p>
+        {% endif %}
+
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

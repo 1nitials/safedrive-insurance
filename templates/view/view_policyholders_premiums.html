@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policyholders and Premiums</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Policyholders and Total Premiums</h1>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Policyholder ID</th>
+                    <th>Name</th>
+                    <th>Contact Number</th>
+                    <th>Email</th>
+                    <th>Total Premium (RM)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for policyholder in policyholders %}
+                <tr>
+                    <td>{{ policyholder.policyholder_id }}</td>
+                    <td>{{ policyholder.name }}</td>
+                    <td>{{ policyholder.contact_number }}</td>
+                    <td>{{ policyholder.email }}</td>
+                    <td>{{ policyholder.total_premium }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

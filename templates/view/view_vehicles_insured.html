@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Coverage Details</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Vehicle Coverage Details</h1>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Vehicle ID</th>
+                    <th>Vehicle Plate Number</th>
+                    <th>Vehicle Type</th>
+                    <th>Policy Number</th>
+                    <th>Policy Type</th>
+                    <th>Coverage Details</th>
+                    <th>Policy Start Date</th>
+                    <th>Policy End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>{{ vehicle['vehicle_id'] }}</td>
+                    <td>{{ vehicle['plate_number'] }}</td>
+                    <td>{{ vehicle['vehicle_type'] }}</td>
+                    <td>{{ vehicle['policy_number'] }}</td>
+                    <td>{{ vehicle['policy_type']}}</td>
+                    <td>
+                        {% if vehicle['coverage_details']['coverage_type'] == 'Third Party Coverage' %}
+                            Liability Limit: {{ vehicle['coverage_details']['liability_limit'] }}<br>
+                            Property Damage Limit: {{ vehicle['coverage_details']['property_damage_limit'] }}<br>
+                            Injury Limit: {{ vehicle['coverage_details']['injury_limit'] }}
+                        {% elif vehicle['coverage_details']['coverage_type'] == 'Comprehensive Coverage' %}
+                            Repair Coverage Limit: {{ vehicle['coverage_details']['repair_limit'] }}<br>
+                            Roadside Assistance: {{ vehicle['coverage_details']['roadside_assistance'] }}<br>
+                            Theft Coverage: {{ vehicle['coverage_details']['theft_coverage'] }}
+                        {% else %}
+                            No Coverage Details
+                        {% endif %}
+                    </td>
+                    <td>{{ vehicle['policy_start_date'] }}</td>
+                    <td>{{ vehicle['policy_end_date'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

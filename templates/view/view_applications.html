@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application List</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Application List</h1>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Application Date</th>
+                    <th>Status</th>
+                    <th>Purpose</th>
+                    <th>Policyholder Name</th>
+                    <th>Policy Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                <tr>
+                    <td>{{ application['application_id'] }}</td>
+                    <td>{{ application['application_date'] }}</td>
+                    <td>{{ application['application_status'] }}</td>
+                    <td>{{ application['application_purpose'] }}</td>
+                    <td>{{ application['policyholder_name'] }}</td>
+                    <td>{{ application['policy_number'] }}</td>
+                    <td>
+                        <form action="{{ url_for('update_application', application_id=application['application_id']) }}" method="get" style="display:inline;">
+                            <button type="submit" class="btn btn-primary" aria-label="Update application {{ application['application_id'] }}">Update</button>
+                        </form>
+                    </td>                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

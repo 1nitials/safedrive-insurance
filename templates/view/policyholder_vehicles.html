@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policyholder Vehicles</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Policyholder's Vehicles Applied for Insurance</h1>
+        
+        {% if vehicles_data %}
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Policyholder ID</th>
+                        <th>Policyholder Name</th>
+                        <th>Vehicle ID</th>
+                        <th>Vehicle Plate Number</th>
+                        <th>Vehicle Type</th>
+                        <th>Manufacture Year</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles_data %}
+                        <tr>
+                            <td>{{ vehicle.Policyholder_ID }}</td>
+                            <td>{{ vehicle.Policyholder_Name }}</td>
+                            <td>{{ vehicle.Vehicle_ID }}</td>
+                            <td>{{ vehicle.Vehicle_Plate_Num }}</td>
+                            <td>{{ vehicle.Vehicle_Type }}</td>
+                            <td>{{ vehicle.Vehicle_Manufacture_Year }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No vehicles found for any policyholders.</p>
+        {% endif %}
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+</body>
+</html>

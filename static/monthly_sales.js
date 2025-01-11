@@ -1,39 +1,70 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Extract data from the global `salesData` variable
     const labels = salesData.map(sale => sale.Month);
-    const data = salesData.map(sale => sale.Policy_Count);
+    const policyCountData = salesData.map(sale => sale.Policy_Count);
+    const premiumData = salesData.map(sale => sale.Total_Premium);
 
-    // Create the chart
+    // Initialize chart with Policy Count as default
     const ctx = document.getElementById("salesChart").getContext("2d");
-    new Chart(ctx, {
-        type: "line", // Change from "bar" to "line"
+    const salesChart = new Chart(ctx, {
+        type: "line",
         data: {
             labels: labels,
             datasets: [
                 {
-                    label: "Monthly Policy Sales",
-                    data: data,
-                    backgroundColor: "rgba(0, 123, 255, 0.3)", // Slightly transparent for better aesthetics
-                    borderColor: "rgba(0, 123, 255, 1)", // Line color
-                    borderWidth: 2, // Line thickness
-                    fill: true, // Fill under the line
-                    tension: 0.4 // Smooth out the line
+                    label: "Monthly Policy Count",
+                    data: policyCountData,
+                    backgroundColor: "rgba(0, 123, 255, 0.3)",
+                    borderColor: "rgba(0, 123, 255, 1)",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Disable to manually control aspect ratio
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: "top",
+                    display: false // Hide legend since dropdown is used
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "Values"
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: "Month"
+                    }
                 }
             }
-        }        
+        }
+    });
+
+    // Handle dropdown selection change
+    const dataSelector = document.getElementById("dataSelector");
+    dataSelector.addEventListener("change", () => {
+        const selectedValue = dataSelector.value;
+
+        // Update chart data based on the selected dropdown value
+        if (selectedValue === "policyCount") {
+            salesChart.data.datasets[0].data = policyCountData;
+            salesChart.data.datasets[0].label = "Monthly Policy Count";
+            salesChart.options.scales.y.title.text = "Policy Count";
+        } else if (selectedValue === "totalPremium") {
+            salesChart.data.datasets[0].data = premiumData;
+            salesChart.data.datasets[0].label = "Total Premium Sales (RM)";
+            salesChart.options.scales.y.title.text = "Premium (RM)";
+        }
+
+        // Update the chart to reflect the new data
+        salesChart.update();
     });
 });

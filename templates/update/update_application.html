@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Application</title>
+    <link rel="stylesheet" href="/static/view.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .update-button {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Update Application</h1>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" onsubmit="return confirmUpdate();">
+            <label for="application_status">Application Status:</label>
+            <select id="application_status" name="application_status" required>
+                <option value="Approved" {% if application.Application_Status == 'Approved' %}selected{% endif %}>Approved</option>
+                <option value="Pending" {% if application.Application_Status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Rejected" {% if application.Application_Status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+            
+            <label for="application_purpose">Application Purpose:</label>
+            <select id="application_purpose" name="application_purpose" required>
+                <option value="Personal" {% if application.Application_Purpose == 'Personal' %}selected{% endif %}>Personal</option>
+                <option value="Commercial" {% if application.Application_Purpose == 'Commercial' %}selected{% endif %}>Commercial</option>
+            </select>
+            
+            <label for="application_date">Application Date:</label>
+            <input type="date" id="application_date" name="application_date" value="{{ application.Application_Date }}" required>
+            
+            <div class="back-button">
+                <a href="/view/view_applications" class="button">Go Back</a>
+                <button type="submit" class="update-button">Update Application</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function confirmUpdate() {
+            return confirm("Are you sure you want to update this application?");
+        }
+    </script>
+</body>
+</html>

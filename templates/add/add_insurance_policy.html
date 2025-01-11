@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Insurance Policy</title>
+    <link rel="stylesheet" href="/static/form-styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Add Insurance Policy</h1>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" action="/add_insurance_policy">
+            <label for="policy_number">Policy Number</label>
+            <input type="text" name="policy_number" id="policy_number" required>
+
+            <label for="policy_type">Policy Type</label>
+            <select name="policy_type" id="policy_type" required>
+                <option value="THIRD_PARTY_COVERAGE">Third Party Coverage</option>
+                <option value="COMPREHENSIVE_COVERAGE">Comprehensive Coverage</option>
+            </select>
+
+            <label for="policy_premium">Policy Premium</label>
+            <input type="text" name="policy_premium" id="policy_premium" required>
+
+            <!-- Third Party Coverage Details -->
+            <div id="third_party_coverage_details" style="display: none;">
+                <label for="liability_coverage_limit">Liability Coverage Limit</label><br>
+                <input type="text" name="liability_coverage_limit" id="liability_coverage_limit"><br><br>
+
+                <label for="property_damage_liability">Property Damage Liability</label><br>
+                <input type="text" name="property_damage_liability" id="property_damage_liability"><br><br>
+
+                <label for="injury_liability_coverage">Injury Liability Coverage</label><br>
+                <input type="text" name="injury_liability_coverage" id="injury_liability_coverage"><br><br>
+            </div>
+
+            <!-- Comprehensive Coverage Details -->
+            <div id="comprehensive_coverage_details" style="display: none;">
+                <label for="repair_coverage_limit">Repair Coverage Limit</label><br>
+                <input type="text" name="repair_coverage_limit" id="repair_coverage_limit"><br><br>
+
+                <label for="roadside_assistance_included">Roadside Assistance Included</label><br>
+                <input type="checkbox" name="roadside_assistance_included" id="roadside_assistance_included"><br><br>
+
+                <label for="theft_coverage">Theft Coverage</label><br>
+                <input type="checkbox" name="theft_coverage" id="theft_coverage"><br><br>
+            </div>
+
+            <button type="submit">Add Insurance Policy</button>
+        </form>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+
+        <script>
+            document.getElementById("policy_type").addEventListener("change", function () {
+                var policyType = this.value;
+                if (policyType === "THIRD_PARTY_COVERAGE") {
+                    document.getElementById("third_party_coverage_details").style.display = "block";
+                    document.getElementById("comprehensive_coverage_details").style.display = "none";
+                } else if (policyType === "COMPREHENSIVE_COVERAGE") {
+                    document.getElementById("comprehensive_coverage_details").style.display = "block";
+                    document.getElementById("third_party_coverage_details").style.display = "none";
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

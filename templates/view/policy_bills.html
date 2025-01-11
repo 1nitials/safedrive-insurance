@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Bills</title>
+    <link rel="stylesheet" href="/static/view.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Policy Bills</h1>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Policy ID</th>
+                    <th>Policy Number</th>
+                    <th>Premium Amount (RM)</th>
+                    <th>Bill Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for policy in policies %}
+                <tr>
+                    <td>{{ policy.Policy_ID }}</td>
+                    <td>{{ policy.Policy_Number }}</td>
+                    <td>{{ policy.Policy_Premium_Amount }}</td>
+                    <td>{{ policy.Bill_Count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

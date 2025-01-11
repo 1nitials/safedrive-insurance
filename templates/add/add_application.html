@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply Application</title>
+    <link rel="stylesheet" href="/static/form-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Apply for Insurance</h1>
+        <form method="POST">
+            <label for="policyholder_id">Policyholder ID:</label>
+            <select name="policyholder_id" required>
+                <option value="">Select Policyholder</option>
+                {% for policyholder in policyholders %}
+                    <option value="{{ policyholder.Policyholder_ID }}">
+                        {{ policyholder.Policyholder_ID }} - {{ policyholder.Policyholder_Name }}
+                    </option>
+                {% endfor %}
+            </select>
+        
+            <label for="policy_id">Policy ID:</label>
+            <select name="policy_id" required>
+                <option value="">Select Policy</option>
+                {% for policy in policies %}
+                    <option value="{{ policy.Policy_ID }}">
+                        {{ policy.Policy_ID }} - {{ policy.Policy_Number }}
+                    </option>
+                {% endfor %}
+            </select> 
+
+            <label for="application_date">Application Date:</label>
+            <input type="date" name="application_date" required>
+
+            <label for="application_purpose">Application Purpose:</label>
+            <select name="application_purpose" id="application_purpose" required onchange="showApplicationDetails()">
+                <option value="">Select Purpose</option>
+                <option value="PERSONAL">Personal</option>
+                <option value="COMMERCIAL">Commercial</option>
+            </select>
+
+            <!-- Personal Details Section -->
+            <div id="personal_details" style="display:none;">
+                <label for="mileage_limit">Mileage Limit:</label>
+                <input type="number" name="mileage_limit"><br><br>
+
+                <label for="driver_count">Driver Count:</label>
+                <input type="number" name="driver_count"><br><br>
+            </div>
+
+            <!-- Commercial Details Section -->
+            <div id="commercial_details" style="display:none;">
+                <label for="fleet_size">Fleet Size:</label>
+                <input type="number" name="fleet_size"><br><br>
+
+                <label for="goods_covered">Goods Covered:</label>
+                <input type="text" name="goods_covered"><br><br>
+
+                <label for="business_use_type">Business Use Type:</label>
+                <input type="text" name="business_use_type"><br><br>
+            </div>  
+
+            <button type="submit">Submit Application</button>
+        </form>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+
+        <script>        
+            function showApplicationDetails() {
+                var purpose = document.getElementById("application_purpose").value;
+                if (purpose === "PERSONAL") {
+                    document.getElementById("personal_details").style.display = "block";
+                    document.getElementById("commercial_details").style.display = "none";
+                } else if (purpose === "COMMERCIAL") {
+                    document.getElementById("commercial_details").style.display = "block";
+                    document.getElementById("personal_details").style.display = "none";
+                } else {
+                    document.getElementById("personal_details").style.display = "none";
+                    document.getElementById("commercial_details").style.display = "none";
+                }
+            }
+
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Policyholder</title>
+    <link rel="stylesheet" href="/static/form-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Pending Applications</h2>
+        <form method="POST" action="/approve_application">
+            {% if applications %}
+                <ul tyle="list-style: none; padding: 0;">
+                    {% for application in applications %}
+                        <li style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
+                            <label style="display: block; font-weight: bold;"></label>
+                                <input type="radio" name="application_id" value="{{ application.Application_ID }}" required>
+                                Application ID: {{ application.Application_ID }}
+                            </label>
+                            <div style="margin-left: 25px; color: #555;">
+                                Date: {{ application.Application_Date }}, Purpose: {{ application.Application_Purpose }}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <label for="action">Action:</label>
+                <select name="action" id="action" required onchange="toggleDateFields(this.value)">
+                    <option value="">--Select--</option>
+                    <option value="Approve">Approve</option>
+                    <option value="Reject">Reject</option>
+                </select>
+
+                <div id="date-fields" style="display: none;">
+                    <label for="policy_start_date">Policy Start Date:</label>
+                    <input type="date" name="policy_start_date" id="policy_start_date">
+                    <label for="policy_end_date">Policy End Date:</label>
+                    <input type="date" name="policy_end_date" id="policy_end_date">
+                </div>
+
+                <button type="submit">Submit</button>
+
+                <script>
+                    function toggleDateFields(action) {
+                        const dateFields = document.getElementById('date-fields');
+                        if (action === 'Approve') {
+                            dateFields.style.display = 'block';
+                        } else {
+                            dateFields.style.display = 'none';
+                        }
+                    }
+                </script>
+            {% else %}
+                <p>No pending applications found.</p>
+            {% endif %}
+        </form>
+        <div class="back-button">
+            <a href="/" class="button">Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

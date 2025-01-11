@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Policy</title>
+    <link rel="stylesheet" href="/static/view.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .update-button {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Update Policy</h1>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" onsubmit="return confirmUpdate();">
+            <label for="policy_number">Policy Number:</label>
+            <input type="text" id="policy_number" name="policy_number" value="{{ policy.Policy_Number }}" required>
+            
+            <label for="policy_type">Policy Type:</label>
+            <select id="policy_type" name="policy_type" required>
+                <option value="THIRD_PARTY_COVERAGE" {% if policy.Policy_Type == 'THIRD_PARTY_COVERAGE' %}selected{% endif %}>Third Party Coverage</option>
+                <option value="COMPREHENSIVE_COVERAGE" {% if policy.Policy_Type == 'COMPREHENSIVE_COVERAGE' %}selected{% endif %}>Comprehensive Coverage</option>
+            </select>
+            
+            <label for="policy_premium">Policy Premium Amount:</label>
+            <input type="number" id="policy_premium" name="policy_premium" value="{{ policy.Policy_Premium_Amount }}" required>
+            
+            <div class="back-button">
+                <a href="/view/view_policies" class="button">Go Back</a>
+                <button type="submit" class="update-button">Update Policy</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function confirmUpdate() {
+            return confirm("Are you sure you want to update this policy's information?");
+        }
+    </script>
+</body>
+</html>
