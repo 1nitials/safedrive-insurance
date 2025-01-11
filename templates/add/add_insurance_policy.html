@@ -13,7 +13,7 @@
         {% if error %}
             <p style="color: red;">{{ error }}</p>
         {% endif %}
-        <form method="POST" action="/add_insurance_policy">
+        <form method="POST" action="{{ url_for('add_insurance_policy') }}">
             <label for="policy_number">Policy Number</label>
             <input type="text" name="policy_number" id="policy_number" required>
 
@@ -58,16 +58,25 @@
 
         <script>
             document.getElementById("policy_type").addEventListener("change", function () {
-                var policyType = this.value;
+                const policyType = this.value;
+                const thirdPartyDetails = document.getElementById("third_party_coverage_details");
+                const comprehensiveDetails = document.getElementById("comprehensive_coverage_details");
+        
                 if (policyType === "THIRD_PARTY_COVERAGE") {
-                    document.getElementById("third_party_coverage_details").style.display = "block";
-                    document.getElementById("comprehensive_coverage_details").style.display = "none";
+                    thirdPartyDetails.style.display = "block";
+                    comprehensiveDetails.style.display = "none";
                 } else if (policyType === "COMPREHENSIVE_COVERAGE") {
-                    document.getElementById("comprehensive_coverage_details").style.display = "block";
-                    document.getElementById("third_party_coverage_details").style.display = "none";
+                    thirdPartyDetails.style.display = "none";
+                    comprehensiveDetails.style.display = "block";
+                } else {
+                    thirdPartyDetails.style.display = "none";
+                    comprehensiveDetails.style.display = "none";
                 }
             });
-        </script>
+        
+            // Ensure the correct section is shown on page load if the value is preselected
+            document.getElementById("policy_type").dispatchEvent(new Event("change"));
+        </script>        
     </div>
 </body>
 </html>

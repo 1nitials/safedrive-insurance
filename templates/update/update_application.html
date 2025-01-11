@@ -29,6 +29,8 @@
             margin: 10px 0 5px;
         }
         input[type="date"],
+        input[type="text"],
+        input[type="number"],
         select {
             width: 100%;
             padding: 10px;
@@ -57,6 +59,14 @@
             display: inline-block;
             margin-left: 10px;
         }
+        .purpose-details {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -74,25 +84,62 @@
             </select>
             
             <label for="application_purpose">Application Purpose:</label>
-            <select id="application_purpose" name="application_purpose" required>
+            <select id="application_purpose" name="application_purpose" required onchange="togglePurposeDetails()">
                 <option value="Personal" {% if application.Application_Purpose == 'Personal' %}selected{% endif %}>Personal</option>
                 <option value="Commercial" {% if application.Application_Purpose == 'Commercial' %}selected{% endif %}>Commercial</option>
             </select>
             
             <label for="application_date">Application Date:</label>
             <input type="date" id="application_date" name="application_date" value="{{ application.Application_Date }}" required>
+
+            <h3>Related Information</h3>
+            <p>Policyholder Name: {{ related_info.Policyholder_Name }}</p>
+            <p>Policy Number: {{ related_info.Policy_Number }}</p>
+            
+            <!-- Personal Purpose Details -->
+            <div id="personal_details" class="purpose-details">
+                <h4>Personal Purpose Details</h4>
+                <label for="mileage_limit">Mileage Limit:</label>
+                <input type="number" id="mileage_limit" name="mileage_limit" value="{{ purpose_details.Mileage_Limit or '' }}">
+                
+                <label for="driver_count">Driver Count:</label>
+                <input type="number" id="driver_count" name="driver_count" value="{{ purpose_details.Driver_Count or '' }}">
+            </div>
+            
+            <!-- Commercial Purpose Details -->
+            <div id="commercial_details" class="purpose-details">
+                <h4>Commercial Purpose Details</h4>
+                <label for="fleet_size">Fleet Size:</label>
+                <input type="number" id="fleet_size" name="fleet_size" value="{{ purpose_details.Fleet_Size or '' }}">
+                
+                <label for="goods_covered">Goods Covered:</label>
+                <input type="text" id="goods_covered" name="goods_covered" value="{{ purpose_details.Goods_Covered or '' }}">
+                
+                <label for="business_use_type">Business Use Type:</label>
+                <input type="text" id="business_use_type" name="business_use_type" value="{{ purpose_details.Business_Use_Type or '' }}">
+            </div>
             
             <div class="back-button">
                 <a href="/view/view_applications" class="button">Go Back</a>
                 <button type="submit" class="update-button">Update Application</button>
             </div>
+
         </form>
     </div>
 
     <script>
+        function togglePurposeDetails() {
+            const purpose = document.getElementById("application_purpose").value;
+            document.getElementById("personal_details").style.display = (purpose === "Personal") ? "block" : "none";
+            document.getElementById("commercial_details").style.display = (purpose === "Commercial") ? "block" : "none";
+        }
+
         function confirmUpdate() {
             return confirm("Are you sure you want to update this application?");
         }
+
+        // Initialize the correct purpose details on page load
+        window.onload = togglePurposeDetails;
     </script>
 </body>
 </html>

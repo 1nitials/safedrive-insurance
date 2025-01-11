@@ -7,6 +7,9 @@ import os
 
 app = Flask(__name__)
 
+# Add this configuration globally
+app.jinja_env.globals['datetime'] = datetime
+
 # Database Connection
 db = mysql.connector.connect(
     host="localhost",
@@ -45,22 +48,22 @@ def add_policyholder():
         email = request.form.get("email")
         date_of_birth = request.form.get("date_of_birth")
         driving_license_number = request.form.get("driving_license_number")
-        
+
         # Initialize an error message variable
         error_message = None
-        
+
         # Input validation
         if not name or not contact_number or not email or not date_of_birth or not driving_license_number:
             error_message = "All fields are required."
-        
+
         # Validate email format
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             error_message = "Invalid email format."
-        
+
         # Validate contact number (assuming digit number less than 14)
-        elif not contact_number.isdigit() or 9 > len(contact_number) > 14:
+        elif not contact_number.isdigit() or not (10 <= len(contact_number) <= 13):
             error_message = "Contact number must be between 10-13 digit number."
-        
+
         # Validate date of birth (ensure it's not a future date)
         try:
             dob = datetime.strptime(date_of_birth, "%Y-%m-%d")
@@ -68,10 +71,10 @@ def add_policyholder():
                 error_message = "Date of birth cannot be a future date."
         except ValueError:
             error_message = "Invalid date of birth format."
-        
+
         if error_message:
-            return render_template("add_policyholder.html", error=error_message)
-        
+            return render_template("add/add_policyholder.html", error=error_message)
+
         # If no errors, insert the data into the database
         try:
             query = """
@@ -86,12 +89,36 @@ def add_policyholder():
             """
             cursor.execute(query, (name, contact_number, email, date_of_birth, driving_license_number))
             db.commit()
+
+            # Fetch the last inserted ID
+            policyholder_id = cursor.lastrowid
+
+            # If the ID is 0, update it to a new valid ID
+            if policyholder_id == 0:
+                # Generate a new unique ID (example: max current ID + 1)
+                cursor.execute("SELECT MAX(Policyholder_ID) FROM policyholder")
+                max_id = cursor.fetchone()[0] or 0
+                new_id = max_id + 1
+
+                update_query = """
+                    UPDATE policyholder 
+                    SET Policyholder_ID = %s 
+                    WHERE Policyholder_ID = 0
+                """
+                cursor.execute(update_query, (new_id,))
+                db.commit()
+                policyholder_id = new_id  # Update the variable with the new ID
+
+            print(f"Policyholder successfully added with ID: {policyholder_id}")
             return redirect("/view/view_policyholders")
+
         except Exception as e:
+            db.rollback()
             print(f"Error inserting policyholder: {e}")
-            return render_template("add_policyholder.html", error="Failed to add policyholder.")
-    
+            return render_template("add/add_policyholder.html", error="Failed to add policyholder.")
+
     return render_template("add/add_policyholder.html")
+
 
 @app.route("/add/add_insurance_policy", methods=["GET", "POST"])
 def add_insurance_policy():
@@ -134,7 +161,7 @@ def add_insurance_policy():
         
         # If there are validation errors, render the form again with the error message
         if error_message:
-            return render_template("add_insurance_policy.html", error=error_message)
+            return render_template("add/add_insurance_policy.html", error=error_message)
         
         # If no errors, proceed with insertion
         try:
@@ -171,101 +198,87 @@ def add_insurance_policy():
 
         except Exception as e:
             print(f"Error inserting insurance policy: {e}")
-            return render_template("add_insurance_policy.html", error="Failed to add insurance policy.")
+            return render_template("add/add_insurance_policy.html", error="Failed to add insurance policy.")
     
     return render_template("add/add_insurance_policy.html")
 
-# Apply Application Function
-@app.route('/add/add_application', methods=['GET', 'POST'])
-def add_application():
-    if request.method == 'POST':
-        # Get selected values from the form
-        policyholder_id = request.form['policyholder_id']
-        policy_id = request.form['policy_id']
-        application_date = request.form['application_date']
-        application_purpose = request.form['application_purpose']
-
-        # Check if Policyholder_ID exists in the POLICYHOLDER table
-        cursor.execute("SELECT * FROM POLICYHOLDER WHERE Policyholder_ID = %s", (policyholder_id,))
-        policyholder = cursor.fetchone()
-
-        if not policyholder:
-            return "Error: Policyholder ID does not exist. Please provide a valid ID."
-
-        # Check if Policy_ID exists in the INSURANCE_POLICY table
-        cursor.execute("SELECT * FROM INSURANCE_POLICY WHERE Policy_ID = %s", (policy_id,))
-        policy = cursor.fetchone()
-
-        if not policy:
-            return "Error: Policy ID does not exist. Please provide a valid policy ID."
-
-        # Insert into APPLICATION table
-        insert_application_query = """
-            INSERT INTO APPLICATION (Policyholder_ID, Policy_ID, Application_Date, Application_Status, Application_Purpose)
-            VALUES (%s, %s, %s, 'Pending', %s)
-        """
-        cursor.execute(insert_application_query, (policyholder_id, policy_id, application_date, application_purpose))
-        db.commit()
-
-        # Get the last inserted application ID
-        application_id = cursor.lastrowid
-
-        # Handle Personal or Commercial details
-        if application_purpose == 'PERSONAL':
-            mileage_limit = request.form['mileage_limit']
-            driver_count = request.form['driver_count']
-            insert_personal_query = """
-                INSERT INTO PERSONAL (Application_ID, Mileage_Limit, Driver_Count)
-                VALUES (%s, %s, %s)
-            """
-            cursor.execute(insert_personal_query, (application_id, mileage_limit, driver_count))
-            db.commit()
-
-        elif application_purpose == 'COMMERCIAL':
-            fleet_size = request.form['fleet_size']
-            goods_covered = request.form['goods_covered']
-            business_use_type = request.form['business_use_type']
-            insert_commercial_query = """
-                INSERT INTO COMMERCIAL (Application_ID, Fleet_Size, Goods_Covered, Business_Use_Type)
-                VALUES (%s, %s, %s, %s)
-            """
-            cursor.execute(insert_commercial_query, (application_id, fleet_size, goods_covered, business_use_type))
-            db.commit()
-
-        return redirect('/view/view_applications')  # Redirect to the applications list page
-    
-    # Fetch all policyholders
-    cursor.execute("SELECT * FROM POLICYHOLDER")
-    policyholders = cursor.fetchall()
-
-    # Fetch all insurance policies (from INSURANCE_POLICY table)
-    cursor.execute("SELECT * FROM INSURANCE_POLICY")
-    policies = cursor.fetchall()
-
-    return render_template('add/add_application.html', policyholders=policyholders, policies=policies)
-
-@app.route('/add/add_vehicle', methods=['GET', 'POST'])
-def add_vehicle():
+@app.route('/add/add_application_and_vehicle', methods=['GET', 'POST'])
+def add_application_and_vehicle():
     if request.method == 'POST':
         try:
-            # Get form data
-            application_id = request.form['application_id']
+            # Application Data
+            policyholder_id = request.form.get('policyholder_id')
+            policy_id = request.form.get('policy_id')
+            application_date = request.form.get('application_date')
+            application_purpose = request.form.get('application_purpose')
+
+            # Validate inputs
+            if not policyholder_id or policyholder_id == '':
+                return "Error: Please select a valid Policyholder ID."
+            policyholder_id = int(policyholder_id)
+
+            cursor.execute("SELECT * FROM POLICYHOLDER WHERE Policyholder_ID = %s", (policyholder_id,))
+            policyholder = cursor.fetchone()
+            if not policyholder:
+                return "Error: Policyholder ID does not exist."
+
+            if not policy_id or policy_id == '':
+                return "Error: Please select a valid Policy ID."
+
+            cursor.execute("SELECT * FROM INSURANCE_POLICY WHERE Policy_ID = %s", (policy_id,))
+            policy = cursor.fetchone()
+            if not policy:
+                return "Error: Policy ID does not exist."
+
+            # Insert Application
+            insert_application_query = """
+                INSERT INTO APPLICATION (Policyholder_ID, Policy_ID, Application_Date, Application_Status, Application_Purpose)
+                VALUES (%s, %s, %s, 'Pending', %s)
+            """
+            cursor.execute(insert_application_query, (policyholder_id, policy_id, application_date, application_purpose))
+
+            # Get the last inserted application ID
+            application_id = cursor.lastrowid
+
+            # Insert Purpose Details
+            if application_purpose == 'PERSONAL':
+                mileage_limit = request.form['mileage_limit']
+                driver_count = request.form['driver_count']
+                insert_personal_query = """
+                    INSERT INTO PERSONAL (Application_ID, Mileage_Limit, Driver_Count)
+                    VALUES (%s, %s, %s)
+                """
+                cursor.execute(insert_personal_query, (application_id, mileage_limit, driver_count))
+            elif application_purpose == 'COMMERCIAL':
+                fleet_size = request.form['fleet_size']
+                goods_covered = request.form['goods_covered']
+                business_use_type = request.form['business_use_type']
+                insert_commercial_query = """
+                    INSERT INTO COMMERCIAL (Application_ID, Fleet_Size, Goods_Covered, Business_Use_Type)
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(insert_commercial_query, (application_id, fleet_size, goods_covered, business_use_type))
+
+            # Insert Vehicle
             vehicle_plate_number = request.form['vehicle_plate_number']
             vehicle_type = request.form['vehicle_type']
             vehicle_manufacture_year = request.form['vehicle_manufacture_year']
 
-            # Insert into VEHICLE table
+            # Check for duplicate Vehicle Plate Numbers
+            cursor.execute("SELECT * FROM VEHICLE WHERE Vehicle_Plate_Num = %s", (vehicle_plate_number,))
+            if cursor.fetchone():
+                return "Error: Vehicle Plate Number already exists."
+
             insert_vehicle_query = """
                 INSERT INTO VEHICLE (Vehicle_Plate_Num, Vehicle_Type, Vehicle_Manufacture_Year, Application_ID)
                 VALUES (%s, %s, %s, %s)
             """
             cursor.execute(insert_vehicle_query, (vehicle_plate_number, vehicle_type, vehicle_manufacture_year, application_id))
-            db.commit()
 
             # Get the last inserted Vehicle_ID
             vehicle_id = cursor.lastrowid
 
-            # Handle subtype details
+            # Handle Vehicle Subtype Details
             if vehicle_type == 'SEDAN':
                 trunk_size = request.form['trunk_size']
                 fuel_efficiency = request.form['fuel_efficiency']
@@ -274,21 +287,14 @@ def add_vehicle():
                     VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_sedan_query, (vehicle_id, trunk_size, fuel_efficiency))
-                db.commit()
-
             elif vehicle_type == 'SUV':
                 towing_capacity = request.form['towing_capacity']
-                # Ensure 'all_wheel_drive' is True if checked, else False
-                all_wheel_drive = True if request.form.get('all_wheel_drive') else False
-
+                all_wheel_drive = 1 if request.form.get('all_wheel_drive') else 0
                 insert_suv_query = """
                     INSERT INTO SUV (Vehicle_ID, Towing_Capacity, All_Wheel_Drive)
                     VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_suv_query, (vehicle_id, towing_capacity, all_wheel_drive))
-                db.commit()
-
-            # Add similar logic for other vehicle types (TRUCK, MOTORCYCLE, VAN)
             elif vehicle_type == 'TRUCK':
                 payload_capacity = request.form['payload_capacity']
                 number_of_tyres = request.form['number_of_tyres']
@@ -297,18 +303,14 @@ def add_vehicle():
                     VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_truck_query, (vehicle_id, payload_capacity, number_of_tyres))
-                db.commit()
-
             elif vehicle_type == 'MOTORCYCLE':
                 engine_displacement = request.form['engine_displacement']
-                helmet_storage = True if request.form.get('helmet_storage') else False
+                helmet_storage = 1 if request.form.get('helmet_storage') else 0
                 insert_motorcycle_query = """
-                    INSERT INTO MOTORCYCLE (Vehicle_ID, Engine_displacement, Helmet_storage)
+                    INSERT INTO MOTORCYCLE (Vehicle_ID, Engine_Displacement, Helmet_Storage)
                     VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_motorcycle_query, (vehicle_id, engine_displacement, helmet_storage))
-                db.commit()
-
             elif vehicle_type == 'VAN':
                 seating_capacity = request.form['seating_capacity']
                 cargo_space = request.form['cargo_space']
@@ -317,19 +319,24 @@ def add_vehicle():
                     VALUES (%s, %s, %s)
                 """
                 cursor.execute(insert_van_query, (vehicle_id, seating_capacity, cargo_space))
-                db.commit()
 
-            return redirect('/view/view_vehicles')  # Redirect to a vehicle list page after insertion
+            db.commit()
+            return redirect('/view/view_applications')
 
         except Exception as e:
-            db.rollback()  # Rollback in case of an error
+            db.rollback()  # Roll back changes on error
             return f"An error occurred: {str(e)}"
 
-    # Fetch applications for dropdown
-    cursor.execute("SELECT * FROM APPLICATION")
-    applications = cursor.fetchall()
+    # Fetch all policyholders
+    cursor.execute("SELECT * FROM POLICYHOLDER")
+    policyholders = cursor.fetchall()
 
-    return render_template('add/add_vehicle.html', applications=applications)
+    # Fetch all insurance policies
+    cursor.execute("SELECT * FROM INSURANCE_POLICY")
+    policies = cursor.fetchall()
+
+    return render_template('add/add_application_and_vehicle.html', policyholders=policyholders, policies=policies)
+
 
 @app.route('/approve_application', methods=['GET', 'POST'])
 def approve_application():
@@ -337,11 +344,19 @@ def approve_application():
 
     if request.method == 'GET':
         try:
-            # Fetch all applications where the status is 'Pending'
+            # Fetch all applications where the status is 'Pending' with additional details
             cursor.execute("""
-                SELECT Application_ID, Application_Date, Application_Purpose
-                FROM APPLICATION
-                WHERE Application_Status = 'Pending'
+                SELECT 
+                    a.Application_ID, 
+                    a.Application_Date, 
+                    a.Application_Purpose, 
+                    ph.Policyholder_Name, 
+                    ip.Policy_Number, 
+                    ip.Policy_Type
+                FROM APPLICATION a
+                JOIN POLICYHOLDER ph ON a.Policyholder_ID = ph.Policyholder_ID
+                JOIN INSURANCE_POLICY ip ON a.Policy_ID = ip.Policy_ID
+                WHERE a.Application_Status = 'Pending'
             """)
             applications = cursor.fetchall()  # Get all pending applications
 
@@ -392,7 +407,7 @@ def approve_application():
                 """, (policy_start_date, policy_end_date, application_id))
                 db.commit()
 
-                return redirect('/view_active_policies')  # Redirect to main menu or list page
+                return redirect('/view/view_applications')  # Redirect to main menu or list page
 
             except mysql.connector.Error as err:
                 errors.append(f"Database error: {err}")
@@ -408,7 +423,7 @@ def approve_application():
                 """, (application_id,))
                 db.commit()
 
-                return redirect('/view_active_policies')  # Redirect to main menu or list page
+                return redirect('/view/view_applications')  # Redirect to main menu or list page
 
             except mysql.connector.Error as err:
                 errors.append(f"Database error: {err}")
@@ -417,6 +432,7 @@ def approve_application():
         else:
             errors.append("Invalid action selected.")
             return render_template('approve_application.html', errors=errors, applications=applications)
+
 
 #View functions**********************************************************************************************
 
@@ -439,11 +455,13 @@ def view_policyholders():
         FROM 
             policyholder
         LEFT JOIN 
-            active_policy ON policyholder.Policyholder_ID = active_policy.Application_ID
+            application ON policyholder.Policyholder_ID = application.Policyholder_ID
         LEFT JOIN 
-            insurance_policy ON active_policy.Application_ID = insurance_policy.Policy_ID
+            active_policy ON application.Application_ID = active_policy.Application_ID
+        LEFT JOIN 
+            insurance_policy ON application.Policy_ID = insurance_policy.Policy_ID
         ORDER BY 
-            policyholder.Policyholder_ID
+            policyholder.Policyholder_ID ASC
     """
     cursor.execute(query)
     results = cursor.fetchall()
@@ -487,7 +505,7 @@ def view_active_policies():
         active_policies = cursor.fetchall()  # Fetch all rows
 
         # Render the template with the data
-        return render_template('view_active_policies.html', active_policies=active_policies)
+        return render_template('view/view_active_policies.html', active_policies=active_policies)
 
     except mysql.connector.Error as err:
         errors = [f"Database error: {err}"]
@@ -514,7 +532,7 @@ def view_vehicles():
     """
     cursor.execute(query)
     vehicles = cursor.fetchall()
-
+    
     # Add additional info based on Vehicle_Type and Application_Purpose
     for vehicle in vehicles:
         # Fetch personal or commercial details based on Application_Purpose
@@ -529,22 +547,24 @@ def view_vehicles():
 
         # Fetch additional vehicle-specific info
         if vehicle["Vehicle_Type"] == "SEDAN":
-            cursor.execute("SELECT Trunk_Size, Fuel_Efficiency FROM sedan WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            cursor.execute("SELECT Trunk_Size, Fuel_Efficiency FROM SEDAN WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
             vehicle["Additional_Info"] = cursor.fetchone() or {}
         elif vehicle["Vehicle_Type"] == "SUV":
-            cursor.execute("SELECT Towing_Capacity, All_Wheel_Drive FROM suv WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            cursor.execute("SELECT Towing_Capacity, All_Wheel_Drive FROM SUV WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
             vehicle["Additional_Info"] = cursor.fetchone() or {}
         elif vehicle["Vehicle_Type"] == "MOTORCYCLE":
-            cursor.execute("SELECT Engine_Displacement, Helmet_Storage FROM motorcycle WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            cursor.execute("SELECT Engine_Displacement, Helmet_Storage FROM MOTORCYCLE WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
             vehicle["Additional_Info"] = cursor.fetchone() or {}
         elif vehicle["Vehicle_Type"] == "TRUCK":
-            cursor.execute("SELECT Payload_Capacity, Number_Of_Tyres FROM truck WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            cursor.execute("SELECT Payload_Capacity, Number_of_Tyres FROM TRUCK WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
             vehicle["Additional_Info"] = cursor.fetchone() or {}
         elif vehicle["Vehicle_Type"] == "VAN":
-            cursor.execute("SELECT Seating_Capacity, Cargo_Space FROM van WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
+            cursor.execute("SELECT Seating_Capacity, Cargo_Space FROM VAN WHERE Vehicle_ID = %s", (vehicle["Vehicle_ID"],))
             vehicle["Additional_Info"] = cursor.fetchone() or {}
         else:
             vehicle["Additional_Info"] = {}
+        
+        print(f"Vehicle ID: {vehicle['Vehicle_ID']}, Type: {vehicle['Vehicle_Type']}, Additional Info: {vehicle['Additional_Info']}")
 
     return render_template("view/view_vehicles.html", vehicles=vehicles)
 
@@ -858,11 +878,11 @@ def delete_policy(policy_id):
         cursor.execute("DELETE FROM insurance_policy WHERE Policy_ID = %s", (policy_id,))
 
         db.commit()
-        return redirect("/view_policies")
+        return redirect("/view/view_policies")
     except Exception as e:
         print(f"Error deleting policy: {e}")
         db.rollback()
-        return redirect("/view_policies")
+        return redirect("/view/view_policies")
 
 @app.route("/delete_policyholder/<int:policyholder_id>", methods=["POST"])
 def delete_policyholder(policyholder_id):
@@ -915,37 +935,93 @@ def delete_policyholder(policyholder_id):
         cursor.execute("DELETE FROM policyholder WHERE Policyholder_ID = %s", (policyholder_id,))
 
         db.commit()
-        return redirect("/view_policyholders")
+        return redirect("/view/view_policyholders")
     except Exception as e:
         print(f"Error deleting policyholder: {e}")
         db.rollback()
-        return redirect("/view_policyholders")
+        return redirect("/view/view_policyholders")
+
+@app.route("/delete_application/<int:application_id>", methods=["POST"])
+def delete_application(application_id):
+    try:
+        # Execute the DELETE statement
+        cursor.execute("DELETE FROM application WHERE Application_ID = %s", (application_id,))
+        db.commit()  # Commit the changes to the database
+        return redirect("/view/view_applications")  # Redirect to the applications list
+    except Exception as e:
+        print(f"Error deleting application: {e}")
+        return redirect("/view/view_applications")  # Redirect back in case of error
 
 #Update functions**********************************************************************************************
 
 @app.route("/update_policy/<int:policy_id>", methods=["GET", "POST"])
 def update_policy(policy_id):
-    if request.method == "POST":
-        # Get updated data from the form
-        policy_number = request.form['policy_number']
-        policy_type = request.form['policy_type']
-        policy_premium = request.form['policy_premium']
+    try:
+        # Fetch the policy details
+        cursor.execute("SELECT * FROM insurance_policy WHERE Policy_ID = %s", (policy_id,))
+        policy = cursor.fetchone()
 
-        # Update the policy in the database
-        cursor.execute("""
-            UPDATE insurance_policy
-            SET Policy_Number = %s,
-                Policy_Type = %s,
-                Policy_Premium_Amount = %s
-            WHERE Policy_ID = %s
-        """, (policy_number, policy_type, policy_premium, policy_id))
-        db.commit()
-        return redirect("/view_policies")
-    
-    # If GET request, fetch the current details of the policy
-    cursor.execute("SELECT * FROM insurance_policy WHERE Policy_ID = %s", (policy_id,))
-    policy = cursor.fetchone()
-    return render_template("update/update_policy.html", policy=policy)
+        if not policy:
+            return "Policy not found", 404
+
+        # Fetch additional details for the specific policy type
+        third_party_coverage = {}
+        comprehensive_coverage = {}
+
+        if policy["Policy_Type"] == "THIRD_PARTY_COVERAGE":
+            cursor.execute("SELECT * FROM third_party_coverage WHERE Policy_ID = %s", (policy_id,))
+            third_party_coverage = cursor.fetchone() or {}
+        elif policy["Policy_Type"] == "COMPREHENSIVE_COVERAGE":
+            cursor.execute("SELECT * FROM comprehensive_coverage WHERE Policy_ID = %s", (policy_id,))
+            comprehensive_coverage = cursor.fetchone() or {}
+
+        if request.method == "POST":
+            # Get form data
+            policy_number = request.form.get("policy_number")
+            policy_type = request.form.get("policy_type")
+            policy_premium = request.form.get("policy_premium")
+
+            # Update the policy details
+            cursor.execute("""
+                UPDATE insurance_policy
+                SET Policy_Number = %s, Policy_Type = %s, Policy_Premium_Amount = %s
+                WHERE Policy_ID = %s
+            """, (policy_number, policy_type, policy_premium, policy_id))
+            db.commit()
+
+            # Update additional details based on the policy type
+            if policy_type == "THIRD_PARTY_COVERAGE":
+                liability_coverage_limit = request.form.get("liability_coverage_limit")
+                property_damage_liability = request.form.get("property_damage_liability")
+                injury_liability_coverage = request.form.get("injury_liability_coverage")
+
+                cursor.execute("""
+                    REPLACE INTO third_party_coverage (Policy_ID, Liability_Coverage_Limit, Property_Damage_Liability, Injury_Liability_Coverage)
+                    VALUES (%s, %s, %s, %s)
+                """, (policy_id, liability_coverage_limit, property_damage_liability, injury_liability_coverage))
+            elif policy_type == "COMPREHENSIVE_COVERAGE":
+                repair_coverage_limit = request.form.get("repair_coverage_limit")
+                roadside_assistance_included = request.form.get("roadside_assistance_included") == "on"
+                theft_coverage = request.form.get("theft_coverage") == "on"
+
+                cursor.execute("""
+                    REPLACE INTO comprehensive_coverage (Policy_ID, Repair_Coverage_Limit, Roadside_Assistance_Included, Theft_Coverage)
+                    VALUES (%s, %s, %s, %s)
+                """, (policy_id, repair_coverage_limit, roadside_assistance_included, theft_coverage))
+
+            db.commit()
+
+            return redirect("/view/view_policies")
+
+        return render_template(
+            "update/update_policy.html",
+            policy=policy,
+            third_party_coverage=third_party_coverage,
+            comprehensive_coverage=comprehensive_coverage,
+        )
+    except Exception as e:
+        return f"An error occurred: {str(e)}", 500
+
 
 @app.route("/update_vehicle/<int:vehicle_id>", methods=["GET", "POST"])
 def update_vehicle(vehicle_id):
@@ -963,13 +1039,106 @@ def update_vehicle(vehicle_id):
                 Vehicle_Manufacture_Year = %s
             WHERE Vehicle_ID = %s
         """, (vehicle_plate_num, vehicle_type, vehicle_manufacture_year, vehicle_id))
+
+        # Update additional details based on vehicle type
+        if vehicle_type == "Motorcycle":
+            engine_displacement = request.form.get("engine_displacement")
+            helmet_storage = request.form.get("helmet_storage")
+            cursor.execute("""
+                UPDATE motorcycle
+                SET Engine_Displacement = %s,
+                    Helmet_Storage = %s
+                WHERE Vehicle_ID = %s
+            """, (engine_displacement, helmet_storage, vehicle_id))
+        elif vehicle_type == "Sedan":
+            trunk_size = request.form.get("trunk_size")
+            fuel_efficiency = request.form.get("fuel_efficiency")
+            cursor.execute("""
+                UPDATE sedan
+                SET Trunk_Size = %s,
+                    Fuel_Efficiency = %s
+                WHERE Vehicle_ID = %s
+            """, (trunk_size, fuel_efficiency, vehicle_id))
+        elif vehicle_type == "SUV":
+            towing_capacity = request.form.get("towing_capacity")
+            all_wheel_drive = request.form.get("all_wheel_drive")
+            cursor.execute("""
+                UPDATE suv
+                SET Towing_Capacity = %s,
+                    All_Wheel_Drive = %s
+                WHERE Vehicle_ID = %s
+            """, (towing_capacity, all_wheel_drive, vehicle_id))
+        elif vehicle_type == "Truck":
+            payload_capacity = request.form.get("payload_capacity")
+            number_of_tyres = request.form.get("number_of_tyres")
+            cursor.execute("""
+                UPDATE truck
+                SET Payload_Capacity = %s,
+                    Number_Of_Tyres = %s
+                WHERE Vehicle_ID = %s
+            """, (payload_capacity, number_of_tyres, vehicle_id))
+        elif vehicle_type == "Van":
+            seating_capacity = request.form.get("seating_capacity")
+            cargo_space = request.form.get("cargo_space")
+            cursor.execute("""
+                UPDATE van
+                SET Seating_Capacity = %s,
+                    Cargo_Space = %s
+                WHERE Vehicle_ID = %s
+            """, (seating_capacity, cargo_space, vehicle_id))
+
         db.commit()
         return redirect("/view/view_vehicles")
-    
+
     # If GET request, fetch the current details of the vehicle
     cursor.execute("SELECT * FROM vehicle WHERE Vehicle_ID = %s", (vehicle_id,))
     vehicle = cursor.fetchone()
-    return render_template("update/update_vehicle.html", vehicle=vehicle)
+
+    # Fetch additional vehicle-specific info
+    if vehicle["Vehicle_Type"] == "Motorcycle":
+        cursor.execute("""
+            SELECT Engine_Displacement, Helmet_Storage
+            FROM motorcycle
+            WHERE Vehicle_ID = %s
+        """, (vehicle_id,))
+        additional_info = cursor.fetchone() or {}
+    elif vehicle["Vehicle_Type"] == "Sedan":
+        cursor.execute("""
+            SELECT Trunk_Size, Fuel_Efficiency
+            FROM sedan
+            WHERE Vehicle_ID = %s
+        """, (vehicle_id,))
+        additional_info = cursor.fetchone() or {}
+    elif vehicle["Vehicle_Type"] == "SUV":
+        cursor.execute("""
+            SELECT Towing_Capacity, All_Wheel_Drive
+            FROM suv
+            WHERE Vehicle_ID = %s
+        """, (vehicle_id,))
+        additional_info = cursor.fetchone() or {}
+    elif vehicle["Vehicle_Type"] == "Truck":
+        cursor.execute("""
+            SELECT Payload_Capacity, Number_Of_Tyres
+            FROM truck
+            WHERE Vehicle_ID = %s
+        """, (vehicle_id,))
+        additional_info = cursor.fetchone() or {}
+    elif vehicle["Vehicle_Type"] == "Van":
+        cursor.execute("""
+            SELECT Seating_Capacity, Cargo_Space
+            FROM van
+            WHERE Vehicle_ID = %s
+        """, (vehicle_id,))
+        additional_info = cursor.fetchone() or {}
+    else:
+        additional_info = {}
+
+    return render_template(
+        "update/update_vehicle.html",
+        vehicle=vehicle,
+        additional_info=additional_info
+    )
+
 
 @app.route("/update_policyholder/<int:policyholder_id>", methods=["GET", "POST"])
 def update_policyholder(policyholder_id):
@@ -1016,40 +1185,72 @@ def update_application(application_id):
             WHERE Application_ID = %s
         """, (application_status, application_purpose, application_date, application_id))
         db.commit()
+
+        # Update purpose details based on the purpose type
+        if application_purpose == "Personal":
+            mileage_limit = request.form.get("mileage_limit")
+            driver_count = request.form.get("driver_count")
+            cursor.execute("""
+                UPDATE personal
+                SET Mileage_Limit = %s,
+                    Driver_Count = %s
+                WHERE Application_ID = %s
+            """, (mileage_limit, driver_count, application_id))
+        elif application_purpose == "Commercial":
+            fleet_size = request.form.get("fleet_size")
+            goods_covered = request.form.get("goods_covered")
+            business_use_type = request.form.get("business_use_type")
+            cursor.execute("""
+                UPDATE commercial
+                SET Fleet_Size = %s,
+                    Goods_Covered = %s,
+                    Business_Use_Type = %s
+                WHERE Application_ID = %s
+            """, (fleet_size, goods_covered, business_use_type, application_id))
+
+        db.commit()
         return redirect("/view/view_applications")
-    
+
     # If GET request, fetch the current details of the application
     cursor.execute("SELECT * FROM application WHERE Application_ID = %s", (application_id,))
     application = cursor.fetchone()
-    
-    # Fetch related policyholder and policy details for display
+
+    # Fetch purpose details based on the Application_Purpose
+    purpose_details = {}
+    if application["Application_Purpose"] == "Personal":
+        cursor.execute("""
+            SELECT Mileage_Limit, Driver_Count
+            FROM personal
+            WHERE Application_ID = %s
+        """, (application_id,))
+        purpose_details = cursor.fetchone() or {}
+    elif application["Application_Purpose"] == "Commercial":
+        cursor.execute("""
+            SELECT Fleet_Size, Goods_Covered, Business_Use_Type
+            FROM commercial
+            WHERE Application_ID = %s
+        """, (application_id,))
+        purpose_details = cursor.fetchone() or {}
+
+    # Fetch related information (Policyholder Name and Policy Number)
     cursor.execute("""
-        SELECT 
-            policyholder.Policyholder_Name,
-            insurance_policy.Policy_Number
-        FROM 
-            application
-        LEFT JOIN 
-            policyholder ON application.Policyholder_ID = policyholder.Policyholder_ID
-        LEFT JOIN 
-            insurance_policy ON application.Policy_ID = insurance_policy.Policy_ID
-        WHERE 
-            application.Application_ID = %s
+        SELECT policyholder.Policyholder_Name, insurance_policy.Policy_Number
+        FROM application
+        LEFT JOIN policyholder ON application.Policyholder_ID = policyholder.Policyholder_ID
+        LEFT JOIN insurance_policy ON application.Policy_ID = insurance_policy.Policy_ID
+        WHERE application.Application_ID = %s
     """, (application_id,))
     related_info = cursor.fetchone()
 
-    return render_template("update/update_application.html", application=application, related_info=related_info)
+    return render_template(
+        "update/update_application.html",
+        application=application,
+        purpose_details=purpose_details,
+        related_info=related_info
+    )
 
-@app.route("/delete_application/<int:application_id>", methods=["POST"])
-def delete_application(application_id):
-    try:
-        # Execute the DELETE statement
-        cursor.execute("DELETE FROM application WHERE Application_ID = %s", (application_id,))
-        db.commit()  # Commit the changes to the database
-        return redirect("/list_applications")  # Redirect to the applications list
-    except Exception as e:
-        print(f"Error deleting application: {e}")
-        return redirect("/list_applications")  # Redirect back in case of error
+
+
 #*******************************************************************************************************
 
 @app.route("/debug_directory")

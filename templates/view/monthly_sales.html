@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Policy Sales</title>
     <link rel="stylesheet" href="/static/view.css">
+    <link rel="stylesheet" href="/static/animation.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/monthly_sales.js" defer></script>
 </head>
@@ -57,5 +58,6 @@
             const salesData = JSON.parse('{{ sales_data | tojson | safe }}');
         </script>
     </div>
+    <script src="/static/animation.js"></script>
 </body>
 </html>

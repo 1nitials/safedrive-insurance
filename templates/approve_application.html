@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Policyholder</title>
+    <title>Approve Application</title>
     <link rel="stylesheet" href="/static/form-styles.css">
 </head>
 <body>
@@ -11,15 +11,25 @@
         <h2>Pending Applications</h2>
         <form method="POST" action="/approve_application">
             {% if applications %}
-                <ul tyle="list-style: none; padding: 0;">
+                <ul style="list-style: none; padding: 0;">
                     {% for application in applications %}
                         <li style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
-                            <label style="display: block; font-weight: bold;"></label>
+                            <label style="display: block; font-weight: bold;">
                                 <input type="radio" name="application_id" value="{{ application.Application_ID }}" required>
                                 Application ID: {{ application.Application_ID }}
                             </label>
-                            <div style="margin-left: 25px; color: #555;">
-                                Date: {{ application.Application_Date }}, Purpose: {{ application.Application_Purpose }}
+                            <div style="margin-left: 25px; color: #555; font-size: 14px; line-height: 1.5;">
+                                <p>
+                                    <strong>Policyholder Name:</strong> {{ application.Policyholder_Name }} &nbsp;|&nbsp; 
+                                    <strong>Policy Number:</strong> {{ application.Policy_Number }}
+                                </p>
+                                <p>
+                                    <strong>Policy Type:</strong> {{ application.Policy_Type }} &nbsp;|&nbsp; 
+                                    <strong>Date:</strong> {{ application.Application_Date }}
+                                </p>
+                                <p>
+                                    <strong>Purpose:</strong> {{ application.Application_Purpose }}
+                                </p>
                             </div>
                         </li>
                     {% endfor %}
@@ -31,14 +41,14 @@
                     <option value="Reject">Reject</option>
                 </select>
 
-                <div id="date-fields" style="display: none;">
+                <div id="date-fields" style="display: none; margin-top: 10px;">
                     <label for="policy_start_date">Policy Start Date:</label>
                     <input type="date" name="policy_start_date" id="policy_start_date">
                     <label for="policy_end_date">Policy End Date:</label>
                     <input type="date" name="policy_end_date" id="policy_end_date">
                 </div>
 
-                <button type="submit">Submit</button>
+                <button type="submit" style="margin-top: 10px;">Submit</button>
 
                 <script>
                     function toggleDateFields(action) {

@@ -5,10 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Coverage Details</title>
     <link rel="stylesheet" href="/static/view.css">
+    <link rel="stylesheet" href="/static/animation.css">
+    <style>
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        .styled-table th, .styled-table td {
+            padding: 10px 15px;
+            text-align: left;
+            vertical-align: top;
+            border: 1px solid #dddddd;
+        }
+
+        .styled-table th {
+            background-color: #009879;
+            color: #ffffff;
+        }
+
+        .styled-table td {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .policy-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .policy-list li {
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons a {
+            text-decoration: none;
+            background-color: #009879;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-buttons a:hover {
+            background-color: #007f68;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1 class="header">Vehicle Coverage Details</h1>
+
+        <div class="nav-buttons">
+            <a href="/view/view_vehicles">View Vehicles</a>
+            <a href="/view/view_vehicles_insured">View Vehicles Insured</a>
+            <a href="/view/policyholder_vehicles">View Policyholder Vehicles</a>
+        </div>
 
         <table class="styled-table">
             <thead>
@@ -33,13 +99,13 @@
                     <td>{{ vehicle['policy_type']}}</td>
                     <td>
                         {% if vehicle['coverage_details']['coverage_type'] == 'Third Party Coverage' %}
-                            Liability Limit: {{ vehicle['coverage_details']['liability_limit'] }}<br>
-                            Property Damage Limit: {{ vehicle['coverage_details']['property_damage_limit'] }}<br>
-                            Injury Limit: {{ vehicle['coverage_details']['injury_limit'] }}
+                            <strong>Liability Limit:</strong> {{ vehicle['coverage_details']['liability_limit'] }}<br>
+                            <strong>Property Damage Limit:</strong> {{ vehicle['coverage_details']['property_damage_limit'] }}<br>
+                            <strong>Injury Limit:</strong> {{ vehicle['coverage_details']['injury_limit'] }}
                         {% elif vehicle['coverage_details']['coverage_type'] == 'Comprehensive Coverage' %}
-                            Repair Coverage Limit: {{ vehicle['coverage_details']['repair_limit'] }}<br>
-                            Roadside Assistance: {{ vehicle['coverage_details']['roadside_assistance'] }}<br>
-                            Theft Coverage: {{ vehicle['coverage_details']['theft_coverage'] }}
+                            <strong>Repair Coverage Limit:</strong> {{ vehicle['coverage_details']['repair_limit'] }}<br>
+                            <strong>Roadside Assistance:</strong> {{ vehicle['coverage_details']['roadside_assistance'] }}<br>
+                            <strong>Theft Coverage:</strong> {{ vehicle['coverage_details']['theft_coverage'] }}
                         {% else %}
                             No Coverage Details
                         {% endif %}
@@ -55,5 +121,6 @@
             <a href="/" class="button">Go Back</a>
         </div>
     </div>
+    <script src="/static/animation.js"></script>
 </body>
 </html>

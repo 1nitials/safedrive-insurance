@@ -71,14 +71,36 @@
             <input type="text" id="policy_number" name="policy_number" value="{{ policy.Policy_Number }}" required>
             
             <label for="policy_type">Policy Type:</label>
-            <select id="policy_type" name="policy_type" required>
+            <select id="policy_type" name="policy_type" required onchange="togglePolicyFields(this.value)">
                 <option value="THIRD_PARTY_COVERAGE" {% if policy.Policy_Type == 'THIRD_PARTY_COVERAGE' %}selected{% endif %}>Third Party Coverage</option>
                 <option value="COMPREHENSIVE_COVERAGE" {% if policy.Policy_Type == 'COMPREHENSIVE_COVERAGE' %}selected{% endif %}>Comprehensive Coverage</option>
             </select>
+
+            <div id="third_party_coverage" style="display: none;">
+                <label for="liability_coverage_limit">Liability Coverage Limit:</label>
+                <input type="number" id="liability_coverage_limit" name="liability_coverage_limit" value="{{ third_party_coverage.Liability_Coverage_Limit }}">
+
+                <label for="property_damage_liability">Property Damage Liability:</label>
+                <input type="number" id="property_damage_liability" name="property_damage_liability" value="{{ third_party_coverage.Property_Damage_Liability }}">
+
+                <label for="injury_liability_coverage">Injury Liability Coverage:</label>
+                <input type="number" id="injury_liability_coverage" name="injury_liability_coverage" value="{{ third_party_coverage.Injury_Liability_Coverage }}">
+            </div>
+
+            <div id="comprehensive_coverage" style="display: none;">
+                <label for="repair_coverage_limit">Repair Coverage Limit:</label>
+                <input type="number" id="repair_coverage_limit" name="repair_coverage_limit" value="{{ comprehensive_coverage.Repair_Coverage_Limit }}">
+
+                <label for="roadside_assistance_included">Roadside Assistance:</label>
+                <input type="checkbox" id="roadside_assistance_included" name="roadside_assistance_included" {% if comprehensive_coverage.Roadside_Assistance_Included %}checked{% endif %}>
+
+                <label for="theft_coverage">Theft Coverage:</label>
+                <input type="checkbox" id="theft_coverage" name="theft_coverage" {% if comprehensive_coverage.Theft_Coverage %}checked{% endif %}>
+            </div>
             
             <label for="policy_premium">Policy Premium Amount:</label>
             <input type="number" id="policy_premium" name="policy_premium" value="{{ policy.Policy_Premium_Amount }}" required>
-            
+
             <div class="back-button">
                 <a href="/view/view_policies" class="button">Go Back</a>
                 <button type="submit" class="update-button">Update Policy</button>
@@ -90,6 +112,17 @@
         function confirmUpdate() {
             return confirm("Are you sure you want to update this policy's information?");
         }
+
+        function togglePolicyFields(type) {
+            document.getElementById("third_party_coverage").style.display = type === "THIRD_PARTY_COVERAGE" ? "block" : "none";
+            document.getElementById("comprehensive_coverage").style.display = type === "COMPREHENSIVE_COVERAGE" ? "block" : "none";
+        }
+
+        // Automatically show the correct fields based on the current policy type
+        window.onload = function() {
+            const currentType = document.getElementById("policy_type").value;
+            togglePolicyFields(currentType);
+        };
     </script>
 </body>
 </html>

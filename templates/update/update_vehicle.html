@@ -58,6 +58,14 @@
             display: inline-block;
             margin-left: 10px;
         }
+        .additional-info {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +79,7 @@
             <input type="text" id="vehicle_plate_num" name="vehicle_plate_num" value="{{ vehicle.Vehicle_Plate_Num }}" required>
             
             <label for="vehicle_type">Type:</label>
-            <select id="vehicle_type" name="vehicle_type" required>
+            <select id="vehicle_type" name="vehicle_type" required onchange="toggleAdditionalInfo()">
                 <option value="Motorcycle" {% if vehicle.Vehicle_Type == 'Motorcycle' %}selected{% endif %}>Motorcycle</option>
                 <option value="Sedan" {% if vehicle.Vehicle_Type == 'Sedan' %}selected{% endif %}>Sedan</option>
                 <option value="SUV" {% if vehicle.Vehicle_Type == 'SUV' %}selected{% endif %}>SUV</option>
@@ -81,7 +89,53 @@
             
             <label for="vehicle_manufacture_year">Manufacture Year:</label>
             <input type="number" id="vehicle_manufacture_year" name="vehicle_manufacture_year" value="{{ vehicle.Vehicle_Manufacture_Year }}" required>
-            
+
+            <!-- Motorcycle Info -->
+            <div id="motorcycle_info" class="additional-info">
+                <label for="engine_displacement">Engine Displacement (cc):</label>
+                <input type="number" id="engine_displacement" name="engine_displacement" value="{{ additional_info.Engine_Displacement }}">
+                <label for="helmet_storage">Helmet Storage:</label>
+                <select id="helmet_storage" name="helmet_storage">
+                    <option value="Yes" {% if additional_info.Helmet_Storage == 'Yes' %}selected{% endif %}>Yes</option>
+                    <option value="No" {% if additional_info.Helmet_Storage == 'No' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <!-- Sedan Info -->
+            <div id="sedan_info" class="additional-info">
+                <label for="trunk_size">Trunk Size (cubic ft):</label>
+                <input type="number" id="trunk_size" name="trunk_size" value="{{ additional_info.Trunk_Size }}">
+                <label for="fuel_efficiency">Fuel Efficiency (mpg):</label>
+                <input type="number" id="fuel_efficiency" name="fuel_efficiency" value="{{ additional_info.Fuel_Efficiency }}">
+            </div>
+
+            <!-- SUV Info -->
+            <div id="suv_info" class="additional-info">
+                <label for="towing_capacity">Towing Capacity (lbs):</label>
+                <input type="number" id="towing_capacity" name="towing_capacity" value="{{ additional_info.Towing_Capacity }}">
+                <label for="all_wheel_drive">All-Wheel Drive:</label>
+                <select id="all_wheel_drive" name="all_wheel_drive">
+                    <option value="Yes" {% if additional_info.All_Wheel_Drive == 'Yes' %}selected{% endif %}>Yes</option>
+                    <option value="No" {% if additional_info.All_Wheel_Drive == 'No' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <!-- Truck Info -->
+            <div id="truck_info" class="additional-info">
+                <label for="payload_capacity">Payload Capacity (lbs):</label>
+                <input type="number" id="payload_capacity" name="payload_capacity" value="{{ additional_info.Payload_Capacity }}">
+                <label for="number_of_tyres">Number of Tyres:</label>
+                <input type="number" id="number_of_tyres" name="number_of_tyres" value="{{ additional_info.Number_Of_Tyres }}">
+            </div>
+
+            <!-- Van Info -->
+            <div id="van_info" class="additional-info">
+                <label for="seating_capacity">Seating Capacity:</label>
+                <input type="number" id="seating_capacity" name="seating_capacity" value="{{ additional_info.Seating_Capacity }}">
+                <label for="cargo_space">Cargo Space (cubic ft):</label>
+                <input type="number" id="cargo_space" name="cargo_space" value="{{ additional_info.Cargo_Space }}">
+            </div>
+
             <div class="back-button">
                 <a href="/view/view_vehicles" class="button">Go Back</a>
                 <button type="submit" class="update-button">Update Vehicle</button>
@@ -90,9 +144,27 @@
     </div>
 
     <script>
-        function confirmUpdate() {
-            return confirm("Are you sure you want to update this vehicle's information?");
+        function toggleAdditionalInfo() {
+            const vehicleType = document.getElementById("vehicle_type").value;
+            document.querySelectorAll(".additional-info").forEach(info => info.style.display = "none");
+    
+            if (vehicleType === "Motorcycle") {
+                document.getElementById("motorcycle_info").style.display = "block";
+            } else if (vehicleType === "Sedan") {
+                document.getElementById("sedan_info").style.display = "block";
+            } else if (vehicleType === "SUV") {
+                document.getElementById("suv_info").style.display = "block";
+            } else if (vehicleType === "Truck") {
+                document.getElementById("truck_info").style.display = "block";
+            } else if (vehicleType === "Van") {
+                document.getElementById("van_info").style.display = "block";
+            }
         }
+
+        // Initialize additional info visibility on page load
+        window.onload = function() {
+            toggleAdditionalInfo();
+        };
     </script>
 </body>
 </html>

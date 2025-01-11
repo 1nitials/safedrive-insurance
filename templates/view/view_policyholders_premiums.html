@@ -5,10 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Policyholders and Premiums</title>
     <link rel="stylesheet" href="/static/view.css">
+    <link rel="stylesheet" href="/static/animation.css">
+    <style>
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        .styled-table th, .styled-table td {
+            padding: 10px 15px;
+            text-align: left;
+            vertical-align: top;
+            border: 1px solid #dddddd;
+        }
+
+        .styled-table th {
+            background-color: #009879;
+            color: #ffffff;
+        }
+
+        .styled-table td {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .policy-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .policy-list li {
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons a {
+            text-decoration: none;
+            background-color: #009879;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-buttons a:hover {
+            background-color: #007f68;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1 class="header">Policyholders and Total Premiums</h1>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <a href="/view/view_policyholders">View Policyholders</a>
+            <a href="/view/view_policyholders_premiums">View Total Premiums</a>
+            <a href="/view/policy_bills">View Policy Bills</a>
+            <a href="/view/view_active_policies">View Active Policies</a>
+        </div>
+
         <table class="styled-table">
             <thead>
                 <tr>
@@ -35,5 +104,6 @@
             <a href="/" class="button">Go Back</a>
         </div>
     </div>
+    <script src="/static/animation.js"></script>
 </body>
 </html>

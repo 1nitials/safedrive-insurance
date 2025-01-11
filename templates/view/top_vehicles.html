@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Vehicle Types Insured</title>
     <link rel="stylesheet" href="/static/view.css">
+    <link rel="stylesheet" href="/static/animation.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/top_vehicles.js" defer></script> <!-- External JS file -->
 </head>
@@ -42,5 +43,6 @@
             const vehicleData = JSON.parse('{{ top_vehicle_types | tojson | safe }}');
         </script>
     </div>
+    <script src="/static/animation.js"></script>
 </body>
 </html>
